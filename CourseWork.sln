@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseWork.Server", "CourseWork.Server\CourseWork.Server.csproj", "{A085B87B-A0C4-4ECE-9ADD-220EFE40AD48}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "coursework.client", "coursework.client\coursework.client.esproj", "{914B1051-1E88-4758-B699-D9EBB2E8D412}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A085B87B-A0C4-4ECE-9ADD-220EFE40AD48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A085B87B-A0C4-4ECE-9ADD-220EFE40AD48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A085B87B-A0C4-4ECE-9ADD-220EFE40AD48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A085B87B-A0C4-4ECE-9ADD-220EFE40AD48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{914B1051-1E88-4758-B699-D9EBB2E8D412}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{914B1051-1E88-4758-B699-D9EBB2E8D412}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{914B1051-1E88-4758-B699-D9EBB2E8D412}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{914B1051-1E88-4758-B699-D9EBB2E8D412}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{914B1051-1E88-4758-B699-D9EBB2E8D412}.Release|Any CPU.Build.0 = Release|Any CPU
+		{914B1051-1E88-4758-B699-D9EBB2E8D412}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BF9A5C92-113D-4323-88B4-FA26D4706796}
+	EndGlobalSection
+EndGlobal
