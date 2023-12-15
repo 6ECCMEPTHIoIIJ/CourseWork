@@ -1,4 +1,4 @@
-﻿import { Difficulties } from "./TicketBase";
+﻿import Difficulties from "./Difficulties";
 
 const DifficultyViews: Difficulties = {
     easy: 'badge bg-success',

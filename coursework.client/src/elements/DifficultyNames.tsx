@@ -1,10 +1,10 @@
-﻿import { Difficulties } from "./TicketBase";
+﻿import Difficulties from "./Difficulties";
 
 const DifficultyNames: Difficulties = {
-    easy: 'Easy',
-    normal: 'Normal',
-    hard: 'Hard',
-    special: 'Special*'
+    easy: 'Легкий',
+    normal: 'Средний',
+    hard: 'Сложный',
+    special: 'Особый*'
 };
 
 export default DifficultyNames;
