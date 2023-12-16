@@ -4,7 +4,7 @@ import TicketWithSingleChoise from "./TicketWithSingleChoise";
 import TicketWithMultipleChoise from "./TicketWithMultipleChoise";
 import TicketWithInputText from "./TicketWithInputText";
 import DifficultyNames from "./DifficultyNames";
-import DifficultyViews from "../DifficultyViews";
+import DifficultyViews from "./DifficultyViews";
 
 interface TicketParams {
     type: number;
@@ -16,12 +16,11 @@ interface TicketParams {
     cost: number;
 }
 
-
 const Ticket = forwardRef(function Ticket(params: TicketParams, ref: ForwardedRef<boolean[] | string>) {
     switch (params.type) {
         case 0:
             return <TicketWithSingleChoise
-                idx={params.idx + 1}
+                idx={params.idx}
                 difficultyView={DifficultyViews[params.difficulty]}
                 difficultyName={DifficultyNames[params.difficulty]}
                 question={params.question}
@@ -32,7 +31,7 @@ const Ticket = forwardRef(function Ticket(params: TicketParams, ref: ForwardedRe
             />;
         case 1:
             return <TicketWithMultipleChoise
-                idx={params.idx + 1}
+                idx={params.idx}
                 difficultyView={DifficultyViews[params.difficulty]}
                 difficultyName={DifficultyNames[params.difficulty]}
                 question={params.question}
@@ -43,7 +42,7 @@ const Ticket = forwardRef(function Ticket(params: TicketParams, ref: ForwardedRe
             />;
         case 2:
             return <TicketWithInputText
-                idx={params.idx + 1}
+                idx={params.idx}
                 difficultyView={DifficultyViews[params.difficulty]}
                 difficultyName={DifficultyNames[params.difficulty]}
                 question={params.question}

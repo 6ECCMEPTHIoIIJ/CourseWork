@@ -15,7 +15,7 @@ const TicketBaseInputText = forwardRef(function TicketBaseInputText(params: Tick
     }, [input, ref]);
 
     return <div className="w-50 p-3 border-end d-flex flex-column">
-        <span className="ms-5 align-self-start">Введите развернутый ответ</span>
+        <span className="ms-5 align-self-start text-justify">Введите развернутый ответ</span>
         <div className="mt-4">
             <textarea
                 className="form-control"

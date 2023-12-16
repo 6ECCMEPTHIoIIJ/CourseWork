@@ -25,21 +25,18 @@ function TicketBaseMultipleChoiseEl(params: TicketBaseMultipleChoiseElParams) {
     const id: string = params.i.toString() + params.idx.toString();
 
     return <div className="form-check">
-        <input
-            type="checkbox"
-            className="btn-check"
-            id={id}
-            name={params.idx.toString()}
-            checked={checkedList[params.i]}
-            onChange={() => {
-                checkedList[params.i] = !checkedList[params.i];
-                setCheckedList([...checkedList]);
-            }}
-        />
-        <label
-            className={"text-start w-100 rounded-0 btn border btn-light"}
-            htmlFor={id}
-        >
+        <label className="list-group-item text-start">
+            <input
+                className="form-check-input"
+                type="checkbox"
+                id={id}
+                name={params.idx.toString()}
+                checked={checkedList[params.i]}
+                onChange={() => {
+                    checkedList[params.i] = !checkedList[params.i];
+                    setCheckedList([...checkedList]);
+                }}
+            />
             {params.variant}
         </label>
     </div>
@@ -54,10 +51,10 @@ const TicketBaseMultipleChoise = forwardRef(function TicketBaseMultipleChoise(pa
     }, [checkedList, ref]);
 
     return <div className="w-50 p-3 border-end d-flex flex-column">
-        <span className="ms-5 align-self-start">Выберите все верные варианты ответа</span>
+        <span className="ms-5 align-self-start text-justify">Выберите все верные варианты ответа</span>
         <form className="mt-4">
             <MultipleChoiseContext.Provider value={{ checkedList: checkedList, setCheckedList: setCheckedList }}>
-                <div className="w-100">{params.variants.map((variant, i) =>
+                <div className="w-100 list-group">{params.variants.map((variant, i) =>
                     <TicketBaseMultipleChoiseEl
                         idx={params.idx}
                         i={i}
