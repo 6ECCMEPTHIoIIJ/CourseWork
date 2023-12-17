@@ -1,10 +1,11 @@
-import { MutableRefObject, useEffect, useState } from 'react';
+import { MutableRefObject, useEffect, useRef, useState } from 'react';
 
 
 import './App.css';
 import TicketsList from './elements/tickets/TicketsList';
 import TicketsListParams from './elements/tickets/TicketsListParams';
 import RightPanel from './elements/RightPanel';
+import EditableTicket from './elements/ticketsEditor/EditableTicket';
 
 interface TicketData extends TicketsListParams {
     id: number;
@@ -243,15 +244,21 @@ function App() {
         ]);
     }, []);
 
+    const dick = useRef<any>({});
+
     return <div>
-        <div className="row">
-            <div className="col-9">
-                <TicketsList tickets={{ current: tickets }} />
-            </div>
-            <div className="col-3">
-                <RightPanel tickets={{ current: tickets }} />
-            </div>
-        </div>
+        {/*<div className="row">*/}
+        {/*<div className="col-9">*/}
+        <EditableTicket i={0} ref={dick} />
+        <div className="btn btn-primary" onClick={() => {
+            console.log(dick.current);
+        }}>Хуй</div>
+                {/*<TicketsList tickets={{ current: tickets }} />*/}
+            {/*</div>*/}
+            {/*<div className="col-3">*/}
+            {/*    <RightPanel tickets={{ current: tickets }} />*/}
+            {/*</div>*/}
+        {/*</div>*/}
     </div>
 }
 

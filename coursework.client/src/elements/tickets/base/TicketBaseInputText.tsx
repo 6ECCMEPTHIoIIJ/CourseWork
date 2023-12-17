@@ -23,6 +23,7 @@ const TicketBaseInputText = forwardRef(function TicketBaseInputText(params: Tick
                 value={input}
                 onChange={e => {
                     setInput(e.target.value);
+                    console.log(input);
                 }} />
         </div>
     </div>
