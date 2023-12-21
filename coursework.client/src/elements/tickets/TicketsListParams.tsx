@@ -7,7 +7,7 @@ interface TicketsListParams {
     description: string;
     cost: number;
     variants?: string[];
-    answer: MutableRefObject<boolean[] | string>;
+    answer: MutableRefObject<boolean[] | string | undefined>;
 }
 
 export default TicketsListParams;

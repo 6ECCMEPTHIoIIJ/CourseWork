@@ -1,7 +1,12 @@
-import { ForwardedRef, MutableRefObject, forwardRef, useEffect, useRef, useState } from "react";
+import { Dispatch, ForwardedRef, MutableRefObject, ReactNode, createContext, forwardRef, useContext, useEffect, useRef, useState } from "react";
+import { Form } from "react-bootstrap";
+import Col from "react-bootstrap/esm/Col";
 import FormControl from "react-bootstrap/esm/FormControl";
 import InputGroup from "react-bootstrap/esm/InputGroup";
 import InputGroupText from "react-bootstrap/esm/InputGroupText";
+import Row from "react-bootstrap/esm/Row";
+import Tab from "react-bootstrap/esm/Tab";
+import Tabs from "react-bootstrap/esm/Tabs";
 
 interface ITicketBaseTemplate {
     type?: number,
@@ -12,10 +17,9 @@ interface ITicketBaseTemplate {
     answer?: number | number[] | string;
 }
 
-const EditableTicket = forwardRef(function EditableTicket(params: { i: number }, ref: ForwardedRef<ITicketBaseTemplate>) {
-    const Question = forwardRef(function Question(params: { i: number }, ref: ForwardedRef<ITicketBaseTemplate>) {
+function EditableTicket(params: { i: number, ticket: MutableRefObject<ITicketBaseTemplate> }) {
+    function Question(params: { i: number, ticket: MutableRefObject<ITicketBaseTemplate> }) {
         const inputFieldRef = useRef<HTMLTextAreaElement>(null);
-        const ticketRef = ref as MutableRefObject<ITicketBaseTemplate>;
         const [ticketQuestion, setTicketQuestion] = useState<string>();
 
         useEffect(() => {
@@ -26,8 +30,8 @@ const EditableTicket = forwardRef(function EditableTicket(params: { i: number },
         }, [ticketQuestion]);
 
         useEffect(() => {
-            ticketRef.current.question = ticketQuestion;
-        }, [ticketQuestion, ticketRef]);
+            params.ticket.current.question = ticketQuestion;
+        }, [ticketQuestion, params.ticket]);
 
         return (
             <InputGroup className="mb-3">
@@ -46,11 +50,10 @@ const EditableTicket = forwardRef(function EditableTicket(params: { i: number },
                 />
             </InputGroup>
         );
-    });
+    }
 
-    const Description = forwardRef(function Description(params: { i: number }, ref: ForwardedRef<ITicketBaseTemplate>) {
+    function Description(params: { i: number, ticket: MutableRefObject<ITicketBaseTemplate> }) {
         const inputFieldRef = useRef<HTMLTextAreaElement>(null);
-        const ticketRef = ref as MutableRefObject<ITicketBaseTemplate>;
         const [ticketDescription, setTicketDescription] = useState<string>();
 
         useEffect(() => {
@@ -61,153 +64,216 @@ const EditableTicket = forwardRef(function EditableTicket(params: { i: number },
         }, [ticketDescription]);
 
         useEffect(() => {
-            ticketRef.current.description = ticketDescription;
-        }, [ticketDescription, ticketRef]);
+            params.ticket.current.description = ticketDescription;
+        }, [ticketDescription, params.ticket]);
 
-        return <div className="input-group mb-3">
-            <span className="input-group-text">Пояснение</span>
-            <textarea
-                id={"description" + params.i.toString()}
-                className="form-control overflow-hidden"
-                placeholder="Введите текст..."
-                value={ticketDescription}
-                ref={inputFieldRef}
-                style={{ resize: "none" }}
-                onChange={e => {
-                    setTicketDescription(e.target.value);
-                }}
-            />
-        </div>
-    });
+        return (
+            <InputGroup className="mb-3">
+                <InputGroupText>Пояснение</InputGroupText>
+                <FormControl
+                    id={"description" + params.i.toString()}
+                    as="textarea"
+                    style={{ resize: "none" }}
+                    className="overflow-hidden"
+                    placeholder="Введите текст..."
+                    ref={inputFieldRef}
+                    value={ticketDescription}
+                    onChange={e => {
+                        setTicketDescription(e.target.value);
+                    }}
+                />
+            </InputGroup>
+        )
+    }
 
-    const Cost = forwardRef(function Cost(params: { i: number }, ref: ForwardedRef<ITicketBaseTemplate>) {
-        const ticketRef = ref as MutableRefObject<ITicketBaseTemplate>;
+    function Cost(params: { i: number, ticket: MutableRefObject<ITicketBaseTemplate> }) {
         const [ticketCost, setTicketCost] = useState<number>();
 
         useEffect(() => {
-            ticketRef.current.cost = ticketCost;
-        }, [ticketCost, ticketRef]);
+            params.ticket.current.cost = ticketCost;
+        }, [ticketCost, params.ticket]);
 
-        return <div className="input-group">
-            <span className="input-group-text">Стоимость</span>
-            <input
-                id={"cost" + params.i.toString()}
-                type="number"
-                pattern="[1-9][0-9]"
-                className="form-control"
-                placeholder="Укажите число..."
-                value={ticketCost}
-                onChange={e => {
-                    const num: number = parseInt(e.target.value);
-                    setTicketCost(isNaN(num)
-                        ? undefined
-                        : Math.min(99, Math.max(1, num)));
-                }}
-            />
-        </div>
-    })
+        return (
+            <InputGroup>
+                <InputGroupText>Стоимость</InputGroupText>
+                <FormControl
+                    id={"cost" + params.i.toString()}
+                    as="input"
+                    type="number"
+                    pattern="[1-9][0-9]"
+                    placeholder="Укажите число..."
+                    value={ticketCost}
+                    onChange={e => {
+                        const num: number = parseInt(e.target.value);
+                        setTicketCost(isNaN(num)
+                            ? undefined
+                            : Math.min(99, Math.max(1, num)));
+                    }}
+                />
+            </InputGroup>
+        )
+    }
 
 
-    const Answer = forwardRef(function Answer(params: { i: number }, ref: ForwardedRef<ITicketBaseTemplate>) {
-        const ticketRef = ref as MutableRefObject<ITicketBaseTemplate>;
+    function Answer(params: { i: number, ticket: MutableRefObject<ITicketBaseTemplate> }) {
+        const InputText = forwardRef(function InputText(params: { ticket: MutableRefObject<ITicketBaseTemplate> }, ref: ForwardedRef<HTMLTextAreaElement>) {
+            const inputFieldRef = ref as MutableRefObject<HTMLTextAreaElement>;
+            const [answerInputText, , ,] = useContext(AnswerContext);
+            const [inputText, setInputText] = useState<string>(answerInputText.current!);
+
+            useEffect(() => {
+                if (inputFieldRef && inputFieldRef.current) {
+                    inputFieldRef.current.style.height = "0px";
+                    inputFieldRef.current.style.height = inputFieldRef.current.scrollHeight + "px";
+                }
+            }, [inputFieldRef, inputText]);
+
+            useEffect(() => {
+                params.ticket.current.answer = inputText;
+                answerInputText.current = inputText;
+            }, [answerInputText, inputText, params.ticket]);
+
+            return (
+                <InputGroup>
+                    <InputGroupText>Ответ</InputGroupText>
+                    <FormControl
+                        as="textarea"
+                        style={{ resize: "none" }}
+                        className="overflow-hidden"
+                        placeholder="Введите текст..."
+                        ref={ref}
+                        value={inputText}
+                        onChange={e => {
+                            setInputText(e.target.value);
+                        }}
+                    />
+                </InputGroup>
+            )
+        });
+
+        function SingleChoise(params: { ticket: MutableRefObject<ITicketBaseTemplate> }) {
+            const [, answerSingleChoise, , answerVariants] = useContext(AnswerContext);
+            const [variants, setVariants] = useState<string[]>(answerVariants.current!);
+            const [singleChoise, setSingleChoise] = useState<number>(answerSingleChoise.current!);
+
+            useEffect(() => {
+                params.ticket.current.variants = variants;
+                answerVariants.current = variants;
+            }, [answerVariants, params.ticket, variants]);
+
+            useEffect(() => {
+                //params.ticket.current.answer = singleChoise;
+                answerSingleChoise.current = singleChoise;
+            }, [answerSingleChoise, params.ticket, singleChoise]);
+
+            return (
+                <ul className="w-100">
+                    {answerVariants.current?.map((variant, i) => (
+                        <li key={i.toString()}>
+                            <InputGroup>
+                                <InputGroup.Radio
+                                    name="single-choise"
+                                    checked={singleChoise == i}
+                                    onChange={() => {
+                                        setSingleChoise(i);
+                                    }} />
+                                <FormControl
+                                    value={variant}
+                                    onChange={e => {
+                                        variants[i] = e.target.value;
+                                        setVariants([...variants]);
+
+                                    }}
+                                />
+                            </InputGroup>
+                        </li>
+                    ))}
+
+                </ul>
+            )
+        }
+
         const [ticketType, setTicketType] = useState<number>(2);
+        const answerInputText = useRef<string>();
+        const answerSingleChoise = useRef<number>();
+        const answerMultipleChoise = useRef<number[]>();
+        const answerVariants = useRef<string[]>(["`12`1", "Sasa"]);
+        const AnswerContext = createContext<[MutableRefObject<string | undefined>,
+            MutableRefObject<number | undefined>,
+            MutableRefObject<number[] | undefined>,
+            MutableRefObject<string[] | undefined>]>([answerInputText, answerSingleChoise, answerMultipleChoise, answerVariants]);
+
 
         useEffect(() => {
-            ticketRef.current.type = ticketType;
-        }, [ticketType, ticketRef]);
+            params.ticket.current.type = ticketType;
+        }, [params.ticket, ticketType]);
 
-        return <div>
-            <nav>
-                <div className="nav nav-tabs" role="tablist">
-                    <button
-                        id="nav-single-choise-tab"
-                        className="nav-link"
-                        data-bs-toggle="tab"
-                        data-bs-target="#single-choise"
-                        type="button"
-                        role="tab"
-                        aria-controls="single-choise"
-                        aria-selected="false"
-                        onChange={() => {
-                            setTicketType(0);
-                        }}
-                    >
-                        Выбор одного варианта ответа
-                    </button>
-                    <button
-                        id="nav-input-text-tab"
-                        className="nav-link active"
-                        data-bs-toggle="tab"
-                        data-bs-target="#input-text"
-                        type="button"
-                        role="tab"
-                        aria-controls="input-text"
-                        aria-selected="true"
-                        onChange={() => {
-                            setTicketType(2);
-                        }}
-                    >
-                        Ввод развернутого ответа
-                    </button>
-                </div>
-            </nav>
-            <div className="tab-content">
-                <div
-                    className="tab-pane fade show active"
-                    id="input-text"
-                    role="tabpanel"
-                    aria-labelledby="nav-single-choise-tab"
-                >
-                    <div className="input-group mb-3">
-                        <span className="input-group-text">Ответ</span>
-                        <textarea
-                            id={"answer-input-text" + params.i.toString()}
-                            className="form-control overflow-hidden"
-                            placeholder="Введите текст..."
-                            disabled
-                            rows={1}
-                            style={{ resize: "none" }}
-                        />
-                    </div>
-                </div>
-                <div
-                    className="tab-pane fade"
-                    id="single-choise"
-                    role="tabpanel"
-                    aria-labelledby="nav-input-text-tab"
-                >
-                    <div className="input-group mb-3">
-                        <span className="input-group-text">Хуй</span>
-                        <textarea
-                            id={"answer-single-choise" + params.i.toString()}
-                            className="form-control overflow-hidden"
-                            placeholder="Введите текст..."
-                            disabled
-                            rows={1}
-                            style={{ resize: "none" }}
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
-    })
+        useEffect(() => {
+            switch (ticketType) {
+                case 0:
+                    params.ticket.current.answer = answerSingleChoise.current;
+                    break;
+                case 1:
+                    params.ticket.current.answer = answerMultipleChoise.current;
+                    break;
+                case 2:
+                    params.ticket.current.answer = answerInputText.current;
+                    break;
+            }
+        }, [params.ticket, ticketType]);
 
-    const [ticketVariants, setTicketVariants] = useState<string[] | undefined>();
+        return (
+
+            <Tabs
+                defaultActiveKey="input-text"
+                justify
+                className="mb-3"
+                variant="pills"
+                onSelect={key => {
+                    console.log(key);
+
+                    if (key == 'single-choise')
+                        setTicketType(0);
+                    else if (key == 'multiple-choise')
+                        setTicketType(1);
+                    else if (key == 'input-text')
+                        setTicketType(2);
+                }}
+            >
+                <Tab eventKey="single-choise" title="Выбор одного варианта ответа">
+                    <AnswerContext.Provider value={[answerInputText, answerSingleChoise, answerMultipleChoise, answerVariants]}>
+                        <SingleChoise ticket={params.ticket} />
+                    </AnswerContext.Provider>
+
+                </Tab>
+                <Tab eventKey="multiple-choise" title="Множественный выбор">
+
+                </Tab>
+                <Tab eventKey="input-text" title="Развернутый ответ">
+                    <AnswerContext.Provider value={[answerInputText, answerSingleChoise, answerMultipleChoise, answerVariants]}>
+                        <InputText ticket={params.ticket} ref={ } />
+                    </AnswerContext.Provider>
+                </Tab>
+            </Tabs>
+        )
+    }
+
+
 
     return <div>
-        <div className="row">
-            <div className="col-8">
-                <form>
-                    <Question i={params.i} ref={ref} />
-                    <Description i={params.i} ref={ref} />
-                    <Cost i={params.i} ref={ref} />
-                </form>
-            </div>
-            <div className="col-4">
-                <Answer i={params.i} ref={ref} />
-            </div>
-        </div>
+        <Row>
+            <Col>
+                <Form>
+                    <Question i={params.i} ticket={params.ticket} />
+                    <Description i={params.i} ticket={params.ticket} />
+                    <Cost i={params.i} ticket={params.ticket} />
+                </Form>
+            </Col>
+            <Col>
+                <Answer i={params.i} ticket={params.ticket} />
+            </Col>
+        </Row>
     </div>
-});
+}
 
 export default EditableTicket;

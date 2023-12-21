@@ -2,9 +2,7 @@ import { MutableRefObject, useEffect, useRef, useState } from 'react';
 
 
 import './App.css';
-import TicketsList from './elements/tickets/TicketsList';
 import TicketsListParams from './elements/tickets/TicketsListParams';
-import RightPanel from './elements/RightPanel';
 import EditableTicket from './elements/ticketsEditor/EditableTicket';
 
 interface TicketData extends TicketsListParams {
@@ -39,7 +37,7 @@ class TicketBaseData implements TicketData {
     description: string;
     cost: number;
     variants?: string[] | undefined;
-    answer: MutableRefObject<boolean[] | string>;
+    answer: MutableRefObject<boolean[] | string | undefined>;
 }
 
 class TicketWithSingleChoiseData extends TicketBaseData {
@@ -249,7 +247,7 @@ function App() {
     return <div>
         {/*<div className="row">*/}
         {/*<div className="col-9">*/}
-        <EditableTicket i={0} ref={dick} />
+        <EditableTicket i={0} ticket={dick} />
         <div className="btn btn-primary" onClick={() => {
             console.log(dick.current);
         }}>Хуй</div>
