@@ -242,21 +242,8 @@ function App() {
         ]);
     }, []);
 
-    const dick = useRef<any>({});
-
     return <div>
-        {/*<div className="row">*/}
-        {/*<div className="col-9">*/}
-        <EditableTicket i={0} ticket={dick} />
-        <div className="btn btn-primary" onClick={() => {
-            console.log(dick.current);
-        }}>Хуй</div>
-                {/*<TicketsList tickets={{ current: tickets }} />*/}
-            {/*</div>*/}
-            {/*<div className="col-3">*/}
-            {/*    <RightPanel tickets={{ current: tickets }} />*/}
-            {/*</div>*/}
-        {/*</div>*/}
+        <EditableTicket idx={0} />
     </div>
 }
 
