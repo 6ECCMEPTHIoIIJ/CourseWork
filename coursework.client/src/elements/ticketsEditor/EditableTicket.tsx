@@ -1,9 +1,13 @@
-import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Dispatch, ReactNode, createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 
+import ListGroup from "react-bootstrap/esm/ListGroup";
+import ListGroupItem from "react-bootstrap/esm/ListGroupItem";
+import Button from "react-bootstrap/esm/Button";
 import Card from "react-bootstrap/esm/Card";
 import CardBody from "react-bootstrap/esm/CardBody";
 import CardHeader from "react-bootstrap/esm/CardHeader";
 import Col from "react-bootstrap/esm/Col";
+import Form from "react-bootstrap/esm/Form";
 import FormControl from "react-bootstrap/esm/FormControl";
 import InputGroup from "react-bootstrap/esm/InputGroup";
 import InputGroupText from "react-bootstrap/esm/InputGroupText";
@@ -34,7 +38,7 @@ function EditableTicket(params: { idx: number }): ReactNode {
                     32
                 )}px`;
             }
-        });
+        }, [question]);
 
         useEffect(() => {
             questions.current[params.idx] = question;
@@ -113,63 +117,6 @@ function EditableTicket(params: { idx: number }): ReactNode {
 
     function Answer(params: { idx: number }) {
 
-        function SingleChoise(params: { idx: number }): ReactNode {
-            const variantsLists = useRef<string[][]>(((): string[][] => {
-                const saved = localStorage.getItem("editableVariants");
-                const initial = JSON.parse(saved || "[[\"\"]]");
-                return initial as string[][];
-            })());
-
-            const answers = useRef<number[]>(((): number[] => {
-                const saved = localStorage.getItem("editableSingleChoise");
-                const initial = JSON.parse(saved || "[0]");
-                return initial as number[];
-            })());
-
-            const [variants, setVariants] = useState<string[]>(() => {
-                return variantsLists.current[params.idx] || [""];
-            });
-
-            const [answer, setAnswer] = useState<number>(() => {
-                return answers.current[params.idx] || 0;
-            });
-
-            useEffect(() => {
-                variantsLists.current[params.idx] = variants;
-                localStorage.setItem("editableVariants", JSON.stringify(variantsLists.current));
-            }, [params.idx, variants]);
-
-            useEffect(() => {
-                answers.current[params.idx] = answer;
-                localStorage.setItem("editableSingleChoise", JSON.stringify(answers.current));
-            }, [params.idx, answer]);
-
-            return (
-                <ul className="w-100">
-                    {variants.map((variant, i) => (
-                        <li key={i.toString()}>
-                            <InputGroup>
-                                <InputGroup.Radio
-                                    name="single-choise"
-                                    checked={answer == i}
-                                    onChange={() => {
-                                        setAnswer(i);
-                                    }} />
-                                <FormControl
-                                    value={variant}
-                                    onChange={e => {
-                                        variants[i] = e.target.value;
-                                        setVariants([...variants]);
-                                    }}
-                                />
-                            </InputGroup>
-                        </li>
-                    ))}
-
-                </ul>
-            )
-        }
-
         const InputText = (params: { idx: number }): ReactNode => (
             <InputField
                 idx={params.idx}
@@ -178,6 +125,52 @@ function EditableTicket(params: { idx: number }): ReactNode {
             />
         );
 
+        const variantsLists = useRef<string[][]>(((): string[][] => {
+            const saved = localStorage.getItem("editableVariants");
+            const initial = JSON.parse(saved || "[[\"\"]]");
+            return initial as string[][];
+        })());
+
+        const singleChoiseAnswers = useRef<number[]>(((): number[] => {
+            const saved = localStorage.getItem("editableSingleChoise");
+            const initial = JSON.parse(saved || "[0]");
+            return initial as number[];
+        })());
+
+        const multipleChoiseAnswers = useRef<number[][]>(((): number[][] => {
+            const saved = localStorage.getItem("editableMultipleChoise");
+            const initial = JSON.parse(saved || "[[]]");
+            return initial as number[][];
+        })());
+
+        const [variants, setVariants] = useState<string[]>(() => {
+            return variantsLists.current[params.idx] || [""];
+        });
+
+        const [singleChoiseAnswer, setSingleChoiseAnswer] = useState<number>(() => {
+            return singleChoiseAnswers.current[params.idx] || 0;
+        });
+
+        const [multipleChoiseAnswer, setMultipleChoiseAnswer] = useState<Set<number>>(() => {
+            return new Set<number>([...multipleChoiseAnswers.current[params.idx]] || []);
+        });
+
+        useEffect(() => {
+            variantsLists.current[params.idx] = variants;
+            localStorage.setItem("editableVariants", JSON.stringify(variantsLists.current));
+        }, [params.idx, variants]);
+
+        useEffect(() => {
+            multipleChoiseAnswers.current[params.idx] = [...multipleChoiseAnswer].sort();
+            localStorage.setItem("editableMultipleChoise", JSON.stringify(multipleChoiseAnswers.current));
+        }, [params.idx, multipleChoiseAnswer]);
+
+        useEffect(() => {
+            singleChoiseAnswers.current[params.idx] = singleChoiseAnswer;
+            localStorage.setItem("editableSingleChoise", JSON.stringify(singleChoiseAnswers.current));
+        }, [params.idx, singleChoiseAnswer]);
+
+
         return (
 
             <Tabs
@@ -185,14 +178,99 @@ function EditableTicket(params: { idx: number }): ReactNode {
                 justify
                 className="mb-3"
                 variant="pills"
-                onSelect={idx => {
-                }}
             >
                 <Tab eventKey="single-choise" title="Выбор одного варианта ответа">
-                    <SingleChoise idx={params.idx} />
+                    <Form>
+                        <ListGroup variant="flush" className="mb-3">
+                            {variants.map((variant, i) => (
+                                <ListGroupItem key={i.toString()}>
+                                    <InputGroup>
+                                        <InputGroup.Radio
+                                            name="SingleChoise"
+                                            checked={singleChoiseAnswer == i}
+                                            onChange={() => {
+                                                setSingleChoiseAnswer(i);
+                                            }} />
+                                        <FormControl
+                                            value={variant}
+                                            onChange={e => {
+                                                variants[i] = e.target.value;
+                                                setVariants([...variants]);
+                                            }}
+                                        />
+                                        {variants.length > 1
+                                            ? <Button
+                                                variant="secondary"
+                                                onClick={() => {
+                                                    variants.splice(i, 1);
+                                                    setVariants([...variants]);
+                                                    setMultipleChoiseAnswer(new Set([...multipleChoiseAnswer]
+                                                        .filter(el => el != i)
+                                                        .map(el => Math.min(i < el ? el - 1 : el, variants.length - 1))));
+                                                    setSingleChoiseAnswer(Math.min(i < singleChoiseAnswer ? singleChoiseAnswer - 1 : singleChoiseAnswer, variants.length - 1));
+                                                }}>-</Button>
+                                            : <></>
+                                        }
+                                    </InputGroup>
+                                </ListGroupItem>
+                            ))}
+                        </ListGroup>
+                        <InputGroup>
+                            <Button
+                                onClick={() => {
+                                    setVariants([...variants, ""]);
+                                }}>+</Button>
+                        </InputGroup>
+                    </Form>
                 </Tab>
                 <Tab eventKey="multiple-choise" title="Множественный выбор">
+                    <Form>
+                        <ListGroup variant="flush" className="mb-3">
+                            {variants.map((variant, i) => (
+                                <ListGroupItem key={i.toString()}>
+                                    <InputGroup>
+                                        <InputGroup.Checkbox
+                                            name="MultipleChoise"
+                                            checked={multipleChoiseAnswer.has(i)}
+                                            onChange={e => {
+                                                if (e.target.checked)
+                                                    multipleChoiseAnswer.add(i);
+                                                else
+                                                    multipleChoiseAnswer.delete(i);
 
+                                                setMultipleChoiseAnswer(new Set(multipleChoiseAnswer));
+                                            }} />
+                                        <FormControl
+                                            value={variant}
+                                            onChange={e => {
+                                                variants[i] = e.target.value;
+                                                setVariants([...variants]);
+                                            }}
+                                        />
+                                        {variants.length > 1
+                                            ? <Button
+                                                variant="secondary"
+                                                onClick={() => {
+                                                    variants.splice(i, 1);
+                                                    setVariants([...variants]);
+                                                    setMultipleChoiseAnswer(new Set([...multipleChoiseAnswer]
+                                                        .filter(el => el != i)
+                                                        .map(el => Math.min(i < el ? el - 1 : el, variants.length - 1))));
+                                                    setSingleChoiseAnswer(Math.min(i < singleChoiseAnswer ? singleChoiseAnswer - 1 : singleChoiseAnswer, variants.length - 1));
+                                                }}>-</Button>
+                                            : <></>
+                                        }
+                                    </InputGroup>
+                                </ListGroupItem>
+                            ))}
+                        </ListGroup>
+                        <InputGroup>
+                            <Button
+                                onClick={() => {
+                                    setVariants([...variants, ""]);
+                                }}>+</Button>
+                        </InputGroup>
+                    </Form>
                 </Tab>
                 <Tab eventKey="input-text" title="Развернутый ответ">
                     <InputText idx={params.idx} />
@@ -203,7 +281,7 @@ function EditableTicket(params: { idx: number }): ReactNode {
 
     return (
         <Card>
-            <CardHeader className="bg-primary text-white">Билет №{params.idx + 1}</CardHeader>
+            <CardHeader className="bg-secondary text-white">Билет №{params.idx + 1}</CardHeader>
             <CardBody className="p-2">
                 <Row className="w-100">
                     <Col className="col-7">
