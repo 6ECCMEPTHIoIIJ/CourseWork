@@ -10,7 +10,6 @@
     }
 
 .ticket-input-field {
-    resize: none;
     -ms-overflow-style: none;
     scrollbar-width: none;
 }

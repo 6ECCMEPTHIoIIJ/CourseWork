@@ -1,12 +1,10 @@
 ﻿import { ReactNode, useEffect, useRef, useState } from "react";
-import FormControl from "react-bootstrap/esm/FormControl";
 import InputGroup from "react-bootstrap/esm/InputGroup";
-import InputGroupText from "react-bootstrap/esm/InputGroupText";
 import "./EditableTicket.css"
 
-export function TicketInputField(params: { idx: number; paramName: string; name: string; height?: string }): ReactNode {
-    const inputFieldRef = useRef<HTMLTextAreaElement>(null);
+import TextField from '@mui/material/TextField';
 
+export function TicketInputField(params: { idx: number; paramName: string; name: string; height?: string }): ReactNode {
     const questions = useRef<string[]>(((): string[] => {
         const saved = localStorage.getItem(params.paramName);
         const initial = JSON.parse(saved || "[\"\"]");
@@ -24,14 +22,14 @@ export function TicketInputField(params: { idx: number; paramName: string; name:
 
     return (
         <InputGroup className="mb-3">
-            <InputGroupText>{params.name}</InputGroupText>
-            <FormControl
-                as="textarea"
-                className="ticket-input-field"
-                style={{ height: params.height }}
+            <TextField
+                fullWidth 
+                minRows={2}
+                maxRows={15}
+                multiline={true}
                 placeholder="Введите текст..."
-                ref={inputFieldRef}
                 value={question}
+                label={params.name}
                 onChange={e => {
                     setQuestion(e.target.value);
                 }} />

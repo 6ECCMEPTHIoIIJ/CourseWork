@@ -1,42 +1,42 @@
-﻿import { ReactNode, useContext } from "react";
+﻿import { ReactNode, createRef, useContext } from "react";
 import ListGroup from "react-bootstrap/esm/ListGroup";
 import ListGroupItem from "react-bootstrap/esm/ListGroupItem";
 import Form from "react-bootstrap/esm/Form";
-import InputGroup from "react-bootstrap/esm/InputGroup";
 import { TicketAnswerContextParams, TicketAnswerContext } from "./TicketAnswerContext";
 import { TicketInputChoiseField } from "./TicketInputChoiseField";
 import { TicketRemoveChoiseButton } from "./TicketRemoveChoiseButton";
 import { TicketAddChoiseButton } from "./TicketAddChoiseButton";
 import "./EditableTicket.css"
+import Radio from "@mui/material/Radio";
 
 export function TicketSingleChoise(): ReactNode {
     const [variants, , singleChoiseAnswer, setSingleChoiseAnswer] = useContext<TicketAnswerContextParams>(TicketAnswerContext);
+
+    const listRef = createRef<HTMLInputElement>();
 
     return (
         <Form>
             <ListGroup
                 variant="flush"
                 className="mb-3 ticket-choise-list"
-                style={{
-                    height: "50vh"
-                }}
             >
                 {variants.map((_, i) => (
                     <ListGroupItem key={i.toString()}>
-                        <InputGroup>
-                            <InputGroup.Radio
+                        <TicketInputChoiseField
+                            ref={listRef}
+                            i={i}
+                            choseEl={<Radio
                                 name="TicketSingleChoise"
                                 checked={singleChoiseAnswer == i}
                                 onChange={() => {
                                     setSingleChoiseAnswer(i);
-                                }} />
-                            <TicketInputChoiseField i={i} />
-                            <TicketRemoveChoiseButton i={i} />
-                        </InputGroup>
+                                }} />}
+                            deleteBtn={<TicketRemoveChoiseButton i={i} />}
+                        />
                     </ListGroupItem>
                 ))}
             </ListGroup>
-            <TicketAddChoiseButton />
+            <TicketAddChoiseButton listRef={listRef as MutableRefObject<HTMLInputElement>} />
         </Form >
     );
 }

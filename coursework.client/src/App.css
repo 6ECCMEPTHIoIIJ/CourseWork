@@ -1,5 +1,5 @@
 ﻿#root {
-    height: 100vh;
+    min-height: 100vh;
     width: 100vw;
     padding: 1em;
     margin: 0 auto;
@@ -17,4 +17,8 @@ tr:nth-child(odd) {
 th, td {
     padding-left: 1rem;
     padding-right: 1rem;
+}
+
+html, body {
+    scroll-behavior: smooth
 }
