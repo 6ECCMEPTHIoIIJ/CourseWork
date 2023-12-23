@@ -1,0 +1,20 @@
+.ticket-choise-list {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+    .ticket-choise-list::-webkit-scrollbar {
+        display: none;
+    }
+
+.ticket-input-field {
+    resize: none;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+    .ticket-input-field::-webkit-scrollbar {
+        display: none;
+    }
