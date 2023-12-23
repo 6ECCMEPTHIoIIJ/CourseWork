@@ -2,11 +2,9 @@ import { ReactNode, useState } from "react";
 
 import React from "react";
 
-import Container from "react-bootstrap/esm/Container";
 import EditableTicket from "./EditableTicket";
-import { AppBar, Box, Button, Card, CardActions, CardHeader, CardMedia, CssBaseline, Dialog, DialogContent, DialogContentText, DialogTitle, IconButton, Toolbar } from "@mui/material";
+import { AppBar, Box, Button, Card, CardActions, CardHeader, CardMedia, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Toolbar } from "@mui/material";
 import { ITicket } from "./ITicket";
-import AddIcon from '@mui/icons-material/Add';
 import { EmptyTicket } from "./TicketConstants";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import { AddOutlined, DeleteOutlined, EditOutlined } from "@mui/icons-material";
@@ -19,7 +17,7 @@ interface TicketPreviewData {
     name: string;
 }
 
-const TicketPreviewDatas: TicketPreviewData[] = [
+export const TicketPreviewDatas: TicketPreviewData[] = [
     {
         url: "https://art.kartinkof.club/uploads/posts/2023-06/thumbs/1685774638_art-kartinkof-club-p-znak-voprosa-art-47.jpg",
         name: "Не задано..."
@@ -42,67 +40,87 @@ type TicketPreviewContextParams = [boolean, React.Dispatch<boolean>];
 
 const TicketPreviewContext = React.createContext<TicketPreviewContextParams>({} as TicketPreviewContextParams);
 
-function DeleteTicketDialog() {
+function DeleteTicketDialog(params: {i: number}) {
+    const [tickets, setTickets] = React.useContext(TicketEditorContext);
     const [open, setOpen] = React.useContext(TicketPreviewContext);
 
     return (
         <Dialog
             open={open}
-            onClose={() => setOpen(false) }
+            onClose={() => setOpen(false)}
         >
             <DialogTitle>
                 Вы уверены, что хотите удалить билет?
             </DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Данное действие нельзя будет отменить в дальнейшем
+                    Данное действие нельзя будет отменить после сохранения теста
                 </DialogContentText>
             </DialogContent>
+            <DialogActions>
+                <Button
+                    color="error"
+                    onClick={() => {
+                        tickets.splice(params.i, 1);
+                        setTickets([...tickets]);
+                        setOpen(false);
+                    }}
+                >Да</Button>
+                <Button
+                    color="primary"
+                    onClick={() => setOpen(false)}
+                >Нет</Button>
+            </DialogActions>
         </Dialog >
     );
 }
 
 function TicketPreview(params: { i: number, type: number }) {
-    const [tickets, setTickets, , setCurrentTicketIdx] = React.useContext(TicketEditorContext);
+    const [, , , setCurrentTicketIdx] = React.useContext(TicketEditorContext);
+    const [openDeleteDialog, setOpenDeleteDialog] = React.useState<boolean>(false);
+
 
     const data: TicketPreviewData = TicketPreviewDatas[params.type + 1];
 
     return (
-        <Card variant="outlined">
-            <CardMedia
-                sx={{ overflow: "clip" }}
-                component="img"
-                height="140px"
-                image={data.url}
-            >
-            </CardMedia>
-            <CardHeader
-                title={"Билет №" + (params.i + 1)}
-                subheader={data.name}
-            />
-            <CardActions>
-                <IconButton
-                    size="small"
-                    color="primary"
-                    onClick={() => {
-                        setCurrentTicketIdx(params.i);
-                    }}
-                >
-                    <EditOutlined />
-                </IconButton>
+        <React.Fragment>
+            <Card variant="outlined">
+                <CardMedia
+                    sx={{ overflow: "clip" }}
+                    component="img"
+                    height="140px"
+                    image={data.url}
+                />
+                <CardHeader
+                    title={"Билет №" + (params.i + 1)}
+                    subheader={data.name}
+                />
+                <CardActions>
+                    <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => {
+                            setCurrentTicketIdx(params.i);
+                        }}
+                    >
+                        <EditOutlined />
+                    </IconButton>
 
 
-                <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => {
-                        tickets.splice(params.i, 1);
-                        setTickets([...tickets]);
-                    }}>
-                    <DeleteOutlined />
-                </IconButton>
-            </CardActions>
-        </Card>
+                    <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => {
+                            setOpenDeleteDialog(true);
+                        }}>
+                        <DeleteOutlined />
+                    </IconButton>
+                </CardActions>
+            </Card>
+            <TicketPreviewContext.Provider value={[openDeleteDialog, setOpenDeleteDialog]}>
+                <DeleteTicketDialog i={params.i} />
+            </TicketPreviewContext.Provider>
+        </React.Fragment>
     )
 }
 
@@ -121,7 +139,7 @@ function TicketAddButton() {
                 scrollToBottomTrigger();
             }}
         >
-            <AddIcon />
+            <AddOutlined />
         </Button>
     )
 }
@@ -156,9 +174,16 @@ const scrollToBottomTrigger = createTrigger();
 function TicketEditor(): ReactNode {
     const [tickets, setTickets] = React.useState<ITicket[]>((): ITicket[] => {
         const saved = localStorage.getItem("tickets");
-        const initial = JSON.parse(saved || "[]");
+        const initial = saved ? JSON.parse(saved) : [];
         return initial as ITicket[];
     });
+
+    const [currentTicketIdx, setCurrentTicketIdx] = React.useState<number>((): number => {
+        const saved = localStorage.getItem("ticketIdx");
+        const initial = saved ? JSON.parse(saved) : -1;
+        return initial as number;
+    });
+
 
     const lastTicketPreviewRef = React.createRef<HTMLDivElement>();
 
@@ -167,12 +192,15 @@ function TicketEditor(): ReactNode {
         localStorage.setItem("tickets", JSON.stringify(tickets));
     }, [tickets]);
 
+    React.useEffect(() => {
+        localStorage.setItem("ticketIdx", JSON.stringify(currentTicketIdx));
+    }, [currentTicketIdx]);
+
     useTriggerEffect(() => {
         lastTicketPreviewRef.current?.scrollIntoView();
     }, scrollToBottomTrigger);
 
 
-    const [currentTicketIdx, setCurrentTicketIdx] = useState<number>(-1);
 
     return (
         <Box>
