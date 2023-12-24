@@ -16,7 +16,9 @@
     "react-dom": "^18.2.0",
     "react-use-trigger": "0.3.4",
     "@mui/material": "5.15.1",
-    "@mui/icons-material": "5.15.1"
+    "@mui/icons-material": "5.15.1",
+    "@emotion/react": "11.11.3",
+    "@emotion/styled": "11.11.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.4",
