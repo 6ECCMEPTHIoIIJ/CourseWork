@@ -1,8 +1,0 @@
-.tickets-list {
-    height: calc(100vh - 2em);
-    overflow-y: scroll;
-}
-
-    .tickets-list::-webkit-scrollbar {
-        display: none;
-    }

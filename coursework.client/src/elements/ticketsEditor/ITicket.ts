@@ -1,4 +1,7 @@
-﻿export interface ITicket {
+﻿import { UUID } from "crypto";
+
+export interface ITicket {
+    id: UUID;
     type: number;
     data: ITicketData;
     answer: ITicketAnswer;

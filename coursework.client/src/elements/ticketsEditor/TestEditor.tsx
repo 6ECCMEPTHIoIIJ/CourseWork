@@ -4,44 +4,35 @@ import React from "react";
 
 import EditableTicket from "./EditableTicket";
 import { Typography, AppBar, Box, Button, Card, CardActions, CardHeader, CardMedia, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Toolbar } from "@mui/material";
-import { ITicket } from "./ITicket";
 import { EmptyTicket } from "./TicketConstants";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import { AddOutlined, DeleteOutlined, EditOutlined } from "@mui/icons-material";
 
 import createTrigger from "react-use-trigger";
 import useTriggerEffect from "react-use-trigger/useTriggerEffect";
+import { UUID } from "crypto";
 
 interface TicketPreviewData {
     url: string;
-    name: string;
 }
 
-export const TicketPreviewDatas: TicketPreviewData[] = [
+export interface ITest {
+    id: UUID;
+    name: string;
+    tickets: ITicket[];
+}
+
+export const TestPreviewData: TicketPreviewData = 
     {
-        url: "https://art.kartinkof.club/uploads/posts/2023-06/thumbs/1685774638_art-kartinkof-club-p-znak-voprosa-art-47.jpg",
-        name: "Не задано..."
-    },
-    {
-        url: "https://skysft.com/wp-content/uploads/2019/08/decision-making.jpg",
-        name: "Выбор одного варианта"
-    },
-    {
-        url: "https://media.istockphoto.com/id/1195433295/ru/%D1%84%D0%BE%D1%82%D0%BE/%D1%81%D1%8E%D1%80%D1%80%D0%B5%D0%B0%D0%BB%D0%B8%D1%81%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9-%D0%BF%D0%B5%D0%B9%D0%B7%D0%B0%D0%B6-%D1%81-%D1%80%D0%B0%D0%B7%D0%BE%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5-%D0%B4%D0%BE%D1%80%D0%BE%D0%B3%D0%B8-%D0%B8-%D1%83%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D0%B5%D0%BB%D0%B8-%D1%81%D1%82%D1%80%D0%B5%D0%BB%D0%BA%D0%B8-%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7%D1%8B%D0%B2%D0%B0%D1%8E%D1%89%D0%B8%D0%B5-%D0%B4%D0%B2%D0%B0-%D1%80%D0%B0%D0%B7%D0%BB%D0%B8%D1%87%D0%BD%D1%8B%D1%85.jpg?s=612x612&w=0&k=20&c=rGkLEjYN_R43n8NaMrqfnPls7p5SUu9zWYp1bXj0Zrc=",
-        name: "Множественный выбор"
-    },
-    {
-        url: "https://www.mgpu.ru/wp-content/uploads/2018/11/sochin.jpg",
-        name: "Развернутый ответ"
+        url: "https://static.tildacdn.com/tild6462-3261-4263-b231-346661373936/1626130055_40-kartin.jpg",
     }
-];
 
 type TicketPreviewContextParams = [boolean, React.Dispatch<boolean>];
 
 const TicketPreviewContext = React.createContext<TicketPreviewContextParams>({} as TicketPreviewContextParams);
 
 function DeleteTicketDialog(params: { i: number }) {
-    const [tickets, setTickets] = React.useContext(TicketEditorContext);
+    const [tickets, setTickets] = React.useContext(TestEditorContext);
     const [open, setOpen] = React.useContext(TicketPreviewContext);
 
     return (
@@ -76,11 +67,10 @@ function DeleteTicketDialog(params: { i: number }) {
 }
 
 function TicketPreview(params: { i: number, type: number }) {
-    const [, , , setCurrentTicketIdx] = React.useContext(TicketEditorContext);
+    const [, , , setCurrentTicketIdx] = React.useContext(TestEditorContext);
     const [openDeleteDialog, setOpenDeleteDialog] = React.useState<boolean>(false);
 
 
-    const data: TicketPreviewData = TicketPreviewDatas[params.type + 1];
 
     return (
         <React.Fragment>
@@ -89,11 +79,10 @@ function TicketPreview(params: { i: number, type: number }) {
                     sx={{ overflow: "clip" }}
                     component="img"
                     height="140px"
-                    image={data.url}
+                    image={TestPreviewData.url}
                 />
                 <CardHeader
-                    title={"Билет №" + (params.i + 1)}
-                    subheader={data.name}
+                    title={"Тест №" + (params.i + 1)}
                 />
                 <CardActions>
                     <Button
@@ -126,7 +115,7 @@ function TicketPreview(params: { i: number, type: number }) {
 
 
 function TicketAddButton() {
-    const [tickets, setTickets] = React.useContext(TicketEditorContext);
+    const [tickets, setTickets] = React.useContext(TestEditorContext);
 
     return (
         <Button
@@ -145,7 +134,7 @@ function TicketAddButton() {
 }
 
 const TicketsPreviewList = React.forwardRef((_: any, ref: React.ForwardedRef<HTMLDivElement>) => {
-    const [tickets] = React.useContext(TicketEditorContext);
+    const [tickets] = React.useContext(TestEditorContext);
 
     return (
         <React.Fragment>
@@ -153,7 +142,7 @@ const TicketsPreviewList = React.forwardRef((_: any, ref: React.ForwardedRef<HTM
                 <Toolbar>
                     <Button
                         color="primary"
-                        
+
                     >
                         <Typography >
                             СОХРАНИТЬ
@@ -161,7 +150,7 @@ const TicketsPreviewList = React.forwardRef((_: any, ref: React.ForwardedRef<HTM
                     </Button>
                     <Button
                         color="error"
-                       >
+                    >
                         <Typography >
                             ОТМЕНИТЬ ИЗМЕНЕНИЯ
                         </Typography>
@@ -187,21 +176,21 @@ const TicketPreviewGrid = React.forwardRef((params: { content: React.ReactNode }
     )
 });
 
-export type TicketEditorContextProps = [ITicket[], React.Dispatch<ITicket[]>, number, React.Dispatch<number>];
+export type TestEditorContextProps = [ITest[], React.Dispatch<ITest[]>, number, React.Dispatch<number>];
 
-export const TicketEditorContext = React.createContext<TicketEditorContextProps>({} as TicketEditorContextProps);
+export const TestEditorContext = React.createContext<TestEditorContextProps>({} as TestEditorContextProps);
 
 const scrollToBottomTrigger = createTrigger();
 
-function TicketEditor(): ReactNode {
-    const [tickets, setTickets] = React.useState<ITicket[]>((): ITicket[] => {
-        const saved = localStorage.getItem("tickets");
+function TestEditor(): ReactNode {
+    const [tests, setTests] = React.useState<ITest[]>((): ITest[] => {
+        const saved = localStorage.getItem("tests");
         const initial = saved ? JSON.parse(saved) : [];
-        return initial as ITicket[];
+        return initial as ITest[];
     });
 
-    const [currentTicketIdx, setCurrentTicketIdx] = React.useState<number>((): number => {
-        const saved = localStorage.getItem("ticketIdx");
+    const [currentTestIdx, setCurrentTestIdx] = React.useState<number>((): number => {
+        const saved = localStorage.getItem("testIdx");
         const initial = saved ? JSON.parse(saved) : -1;
         return initial as number;
     });
@@ -211,12 +200,12 @@ function TicketEditor(): ReactNode {
 
 
     React.useEffect(() => {
-        localStorage.setItem("tickets", JSON.stringify(tickets));
-    }, [tickets]);
+        localStorage.setItem("tests", JSON.stringify(tests));
+    }, [tests]);
 
     React.useEffect(() => {
-        localStorage.setItem("ticketIdx", JSON.stringify(currentTicketIdx));
-    }, [currentTicketIdx]);
+        localStorage.setItem("testIdx", JSON.stringify(setCurrentTestIdx));
+    }, [currentTestIdx]);
 
     useTriggerEffect(() => {
         lastTicketPreviewRef.current?.scrollIntoView();
@@ -225,11 +214,11 @@ function TicketEditor(): ReactNode {
 
 
     return (
-        <TicketEditorContext.Provider value={[tickets, setTickets, currentTicketIdx, setCurrentTicketIdx]}>
+        <TestEditorContext.Provider value={[tickets, setTickets, currentTicketIdx, setCurrentTicketIdx]}>
             {currentTicketIdx === -1 && <TicketsPreviewList ref={lastTicketPreviewRef} />}
             {currentTicketIdx !== -1 && <EditableTicket />}
-        </TicketEditorContext.Provider >
+        </TestEditorContext.Provider >
     )
 }
 
-export default TicketEditor;
+export default TestEditor;

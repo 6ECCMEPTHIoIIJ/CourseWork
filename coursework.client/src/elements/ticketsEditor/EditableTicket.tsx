@@ -1,14 +1,14 @@
-import React, { createContext } from "react";
+import React from "react";
 
 import { ITicket } from "./ITicket";
-import { EmptyTicket } from "./TicketConstants";
-import { AppBar, Box, Button, Card, CardContent, CardHeader, CardMedia, Checkbox, Divider, FormControl, FormHelperText, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, MenuItem, Radio, RadioGroup, Select, TextField, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, Card, Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText, CardContent, CardHeader, CardMedia, Checkbox, Divider, FormControl, FormHelperText, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, MenuItem, Radio, RadioGroup, Select, TextField, Toolbar, Typography } from "@mui/material";
 import { TicketPreviewDatas } from "./TicketEditor";
-import { AddOutlined, CloseOutlined, DeleteOutlined, EditOutlined } from "@mui/icons-material";
+import { AddOutlined, CloseOutlined } from "@mui/icons-material";
 
-import Grid2 from "@mui/material/Unstable_Grid2";
 import createTrigger from "react-use-trigger";
 import useTriggerEffect from "react-use-trigger/useTriggerEffect";
+
+import { TicketEditorContext } from "./TicketEditor"
 
 const scrollToBottomTrigger = createTrigger();
 
@@ -16,18 +16,44 @@ type EditableTicketContextProps = [ITicket, React.Dispatch<ITicket>];
 
 const EditableTicketContext = React.createContext<EditableTicketContextProps>({} as EditableTicketContextProps);
 
-function EditableTicketAnswer() {
-    const [ticket] = React.useContext(EditableTicketContext);
+type TicketDiscardContextParams = [boolean, React.Dispatch<boolean>];
 
-    switch (ticket.type) {
-        case 0:
-            return <EditableTicketAnswerChoise multiple={false} />
-        case 1:
-            return <EditableTicketAnswerChoise multiple={true} />
-        case 2:
-            return <EditableTicketAnswerInput />
-        default: return <React.Fragment />
-    }
+const TicketDiscardContext = React.createContext<TicketDiscardContextParams>({} as TicketDiscardContextParams);
+
+function DiscardTicketDialog() {
+    const [tickets, setTickets, , setCurrentTicketIdx] = React.useContext(TicketEditorContext);
+    const [open, setOpen] = React.useContext(TicketDiscardContext);
+
+    return (
+        <Dialog
+            open={open}
+            onClose={() => setOpen(false)}
+        >
+            <DialogTitle>
+                Вы уверены, что хотите отменить текущие измения?
+            </DialogTitle>
+            <DialogContent>
+                <DialogContentText>
+                    Данное действие нельзя будет отменить
+                </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+                <Button
+                    color="error"
+                    onClick={() => {
+                        setTickets([...tickets]);
+                        setCurrentTicketIdx(-1);
+                        localStorage.removeItem("ticket");
+                        setOpen(false);
+                    }}
+                >Да</Button>
+                <Button
+                    color="primary"
+                    onClick={() => setOpen(false)}
+                >Нет</Button>
+            </DialogActions>
+        </Dialog >
+    );
 }
 
 function EditableTicketAnswerInput() {
@@ -265,28 +291,53 @@ function EditableTicketTypeSelect() {
     )
 }
 
-function EditableTicket(params: { idx: number }) {
+function EditableTicket() {
+    const [tickets, setTickets, currentTicketIdx, setCurrentTicketIdx] = React.useContext(TicketEditorContext);
+
     const [ticket, setTicket] = React.useState<ITicket>((): ITicket => {
         const saved = localStorage.getItem("ticket");
-        const initial = saved ? JSON.parse(saved) : EmptyTicket;
+        const initial = saved ? JSON.parse(saved) : {
+            type: tickets[currentTicketIdx].type,
+            data: { ...tickets[currentTicketIdx].data },
+            answer: {
+                single: tickets[currentTicketIdx].answer.single,
+                multiple: [...tickets[currentTicketIdx].answer.multiple],
+                input: tickets[currentTicketIdx].answer.input,
+                variants: [...tickets[currentTicketIdx].answer.variants]
+            }
+        };
         return initial as ITicket;
     });
-
 
     React.useEffect(() => {
         localStorage.setItem("ticket", JSON.stringify(ticket));
     }, [ticket]);
 
+    const [openDiscardDialog, setOpenDiscardDialog] = React.useState<boolean>(false);
+
+
     return (
         <EditableTicketContext.Provider value={[ticket, setTicket]}>
-            <AppBar component="nav" color="default" variant="outlined">
+            <AppBar component="nav" color="default" variant="outlined" elevation={0}>
                 <Toolbar>
-                    <Button color="primary">
+                    <Button
+                        color="primary"
+                        onClick={() => {
+                            tickets[currentTicketIdx] = ticket;
+                            setTickets([...tickets]);
+                            setCurrentTicketIdx(-1);
+                            localStorage.removeItem("ticket");
+                        }}
+                    >
                         <Typography >
                             СОХРАНИТЬ
                         </Typography>
                     </Button>
-                    <Button color="error">
+                    <Button
+                        color="error"
+                        onClick={() => {
+                            setOpenDiscardDialog(true);
+                        }}>
                         <Typography >
                             ОТМЕНИТЬ ИЗМЕНЕНИЯ
                         </Typography>
@@ -302,7 +353,7 @@ function EditableTicket(params: { idx: number }) {
                     image={TicketPreviewDatas[ticket.type + 1].url}
                 />
                 <CardHeader
-                    title={"Билет №" + (params.idx + 1)}
+                    title={"Билет №" + (currentTicketIdx + 1)}
                     subheader={<EditableTicketTypeSelect />}
                 />
                 <CardContent>
@@ -313,10 +364,15 @@ function EditableTicket(params: { idx: number }) {
                     </Box>
                     <Divider variant="middle" />
                     <Box sx={{ width: "100%", padding: "2em" }}>
-                        <EditableTicketAnswer />
+                        {ticket.type === 0 && <EditableTicketAnswerChoise multiple={false} />}
+                        {ticket.type === 1 && <EditableTicketAnswerChoise multiple={true} />}
+                        {ticket.type === 2 && <EditableTicketAnswerInput />}
                     </Box>
                 </CardContent>
             </Card>
+            <TicketDiscardContext.Provider value={[openDiscardDialog, setOpenDiscardDialog]}>
+                <DiscardTicketDialog />
+            </TicketDiscardContext.Provider>
         </EditableTicketContext.Provider>
     )
 }

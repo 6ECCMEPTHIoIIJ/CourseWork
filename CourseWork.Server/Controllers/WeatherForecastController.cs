@@ -4,7 +4,6 @@ using Microsoft.Identity.Web.Resource;
 
 namespace CourseWork.Server.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("[controller]")]
     [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
