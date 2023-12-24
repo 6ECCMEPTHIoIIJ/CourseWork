@@ -22,7 +22,7 @@ namespace CourseWork.Server
 
             try
             {
-                var connectionString = "User ID=gen_user;Password=o*=1/.CX$J8ew/;Server=185.154.195.121;Port=5432;Database=default_db;Integrated Security=true;Pooling=true;";
+                var connectionString = "user=gen_user;password=o*=1/.CX$J8ew/;server=185.154.195.121;port=5432;Database=default_db;Integrated Security=true;Pooling=true;";
 
                 builder.Services.AddDbContext<ApplicationDbContext>(options =>
                     options.UseNpgsql(connectionString));
