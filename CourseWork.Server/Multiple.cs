@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace CourseWork.Server;
+
+public partial class Multiple
+{
+    public Guid Id { get; set; }
+
+    public Guid TicketId { get; set; }
+
+    public int Data { get; set; }
+
+    public virtual Ticket Ticket { get; set; } = null!;
+}

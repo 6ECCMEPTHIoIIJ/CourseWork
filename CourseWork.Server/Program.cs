@@ -1,4 +1,3 @@
-using CourseWork.Server.libs.utils;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Abstractions;
@@ -20,20 +19,8 @@ namespace CourseWork.Server
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-            try
-            {
-                var connectionString = "user=gen_user;password=o*=1/.CX$J8ew/;server=185.154.195.121;port=5432;Database=default_db;Integrated Security=true;Pooling=true;";
 
-                builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseNpgsql(connectionString));
-
-                Console.WriteLine($"Подключения к базе данных успешно");
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"Ошибка подключения к базе данных: {ex.Message}");
-                Console.WriteLine(ex.ToString());
-            }
+            builder.Services.AddDbContext<DefaultDbContext>();
 
 
             builder.Services.AddControllers();
