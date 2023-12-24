@@ -14,7 +14,9 @@
     "react-bootstrap": "2.9.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-use-trigger": "0.3.4"
+    "react-use-trigger": "0.3.4",
+    "@mui/material": "5.15.1",
+    "@mui/icons-material": "5.15.1"
   },
   "devDependencies": {
     "@types/node": "^20.10.4",
