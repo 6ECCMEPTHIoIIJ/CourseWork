@@ -40,7 +40,7 @@ type TicketPreviewContextParams = [boolean, React.Dispatch<boolean>];
 
 const TicketPreviewContext = React.createContext<TicketPreviewContextParams>({} as TicketPreviewContextParams);
 
-function DeleteTicketDialog(params: {i: number}) {
+function DeleteTicketDialog(params: { i: number }) {
     const [tickets, setTickets] = React.useContext(TicketEditorContext);
     const [open, setOpen] = React.useContext(TicketPreviewContext);
 
@@ -96,25 +96,25 @@ function TicketPreview(params: { i: number, type: number }) {
                     subheader={data.name}
                 />
                 <CardActions>
-                    <IconButton
+                    <Button
                         size="small"
                         color="primary"
                         onClick={() => {
                             setCurrentTicketIdx(params.i);
                         }}
                     >
-                        <EditOutlined />
-                    </IconButton>
+                        РЕДАКТИРОВАТЬ
+                    </Button>
 
 
-                    <IconButton
+                    <Button
                         size="small"
                         color="error"
                         onClick={() => {
                             setOpenDeleteDialog(true);
                         }}>
-                        <DeleteOutlined />
-                    </IconButton>
+                        УДАЛИТЬ
+                    </Button>
                 </CardActions>
             </Card>
             <TicketPreviewContext.Provider value={[openDeleteDialog, setOpenDeleteDialog]}>
@@ -194,7 +194,9 @@ function TicketEditor(): ReactNode {
 
     React.useEffect(() => {
         localStorage.setItem("ticketIdx", JSON.stringify(currentTicketIdx));
-    }, [currentTicketIdx]);
+        if (currentTicketIdx !== -1)
+            localStorage.setItem("ticket", JSON.stringify(tickets[currentTicketIdx]))
+    }, [currentTicketIdx, tickets]);
 
     useTriggerEffect(() => {
         lastTicketPreviewRef.current?.scrollIntoView();
@@ -203,20 +205,12 @@ function TicketEditor(): ReactNode {
 
 
     return (
-        <Box>
-            <CssBaseline />
-            <AppBar component="nav" color="default">
-                <Toolbar>
-                </Toolbar>
-            </AppBar>
-            <Toolbar />
-            <TicketEditorContext.Provider value={[tickets, setTickets, currentTicketIdx, setCurrentTicketIdx]}>
-                {currentTicketIdx === -1
-                    ? <TicketsPreviewList ref={lastTicketPreviewRef} />
-                    : <EditableTicket idx={currentTicketIdx} />
-                }
-            </TicketEditorContext.Provider >
-        </Box>
+        <TicketEditorContext.Provider value={[tickets, setTickets, currentTicketIdx, setCurrentTicketIdx]}>
+            {currentTicketIdx === -1
+                ? <TicketsPreviewList ref={lastTicketPreviewRef} />
+                : <EditableTicket idx={currentTicketIdx} />
+            }
+        </TicketEditorContext.Provider >
     )
 }
 
