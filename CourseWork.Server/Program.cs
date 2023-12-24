@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.Resource;
+using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
+
 
 namespace CourseWork.Server
 {
@@ -15,6 +18,10 @@ namespace CourseWork.Server
             // Add services to the container.
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+
+
+            builder.Services.AddDbContext<DefaultDbContext>();
+
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
