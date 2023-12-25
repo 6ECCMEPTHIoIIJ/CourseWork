@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CourseWork.Server;
+using System.Text;
 
 namespace CourseWork.Server.Controllers
 {
@@ -77,59 +78,66 @@ namespace CourseWork.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<Test>> PostTest(Test test)
         {
-            // Проверьте, не имеет ли какой-либо связанный с ним билет Тип не равен 0, 1 или 2
-            if (test.Tickets.Any(ticket => ticket.Type < 0 || ticket.Type > 2))
-            {
-                return BadRequest("Invalid Type in associated Ticket(s). Type must be 0, 1, or 2.");
-            }
-
-            if (test.Tickets.Any(ticket => ticket.Cost == 0))
-            {
-                return BadRequest("Cost in associated Ticket(s) cannot be 0.");
-            }
-
-            if (test.Tickets == null || test.Tickets.Count == 0)
-            {
-                return BadRequest("The Tickets collection cannot be empty.");
-            }
-
-            if (test.Tickets.Any(ticket => string.IsNullOrWhiteSpace(ticket.Description)))
-            {
-                return BadRequest("Description in associated Ticket(s) cannot be empty or contain only spaces.");
-            }
-
-            if (test.Tickets.Any(ticket => string.IsNullOrWhiteSpace(ticket.Question)))
-            {
-                return BadRequest("Question in associated Ticket(s) cannot be empty or contain only spaces.");
-            }
-
-            if (test.Tickets.Any(ticket => (ticket.Type == 0 || ticket.Type == 1) && (ticket.Variants == null || ticket.Variants.Count == 0)))
-            {
-                return BadRequest("If Type is 0 or 1, then Variants collection should not have a length of 0.");
-            }
-
-            if (test.Tickets.Any(ticket => ticket.Type == 0 && (ticket.Single == null || ticket.Single.Data == -1)))
-            {
-                return BadRequest("If Type is 0, then Single.data should not be -1.");
-            }
+            var errorMsgBuilder = new StringBuilder();
+            bool hasError = false;
+            var tickets = (List<Ticket>)test.Tickets;
 
             if (string.IsNullOrWhiteSpace(test.Name))
             {
-                return BadRequest("Name in Test cannot be empty or contain only spaces.");
+                errorMsgBuilder.AppendLine($"Название теста не задано;");
+                hasError = true;
             }
-
-            if (test.Tickets.Any(ticket => (ticket.Type == 0 || ticket.Type == 1) &&
-                                 (ticket.Variants == null || ticket.Variants.Count < 1)))
+            if (tickets == null || tickets.Count == 0)
             {
-                return BadRequest("If Type is 0 or 1, then Variant should not be empty and should have length greater than 1.");
+                errorMsgBuilder.AppendLine($"Тест не содержит ни одного билета;");
+                hasError = true;
+            }
+            else
+            {
+                for (int i = 0; i < tickets.Count; ++i)
+                {
+                    int ticketId = i + 1;
+                    var ticket = tickets[i];
+                    if (ticket.Type < 0 || ticket.Type > 2)
+                    {
+                        errorMsgBuilder.AppendLine($"Билет №{ticketId}: не указан тип вопроса;");
+                        hasError = true;
+                    }
+                    if (ticket.Cost == 0)
+                    {
+                        errorMsgBuilder.AppendLine($"Билет №{ticketId}: не указана стоимость вопроса;");
+                        hasError = true;
+                    }
+                    if (string.IsNullOrWhiteSpace(ticket.Question))
+                    {
+                        errorMsgBuilder.AppendLine($"Билет №{ticketId}: не указан текст вопроса;");
+                        hasError = true;
+                    }
+                    if (ticket.Type == 1 && (ticket.Variants == null || ticket.Variants.Count == 0))
+                    {
+                        errorMsgBuilder.AppendLine($"Билет №{ticketId}: не указано ни одного варианта ответа;");
+                        hasError = true;
+                    }
+                    else if (ticket.Type == 0 && (ticket.Variants == null || ticket.Variants.Count <= 1))
+                    {
+                        errorMsgBuilder.AppendLine($"Билет №{ticketId}: слишком мало вариантов ответа;");
+                        hasError = true;
+                    }
+                    if (ticket.Type == 0 && (ticket.Single == null || ticket.Single.Data == -1))
+                    {
+                        errorMsgBuilder.AppendLine($"Билет №{ticketId}: не указан правильный варинат ответа;");
+                        hasError = true;
+                    }
+                    if (ticket.Variants != null && ticket.Variants.Any(v => string.IsNullOrWhiteSpace(v.Data)))
+                    {
+                        errorMsgBuilder.AppendLine($"Билет №{ticketId}: один из вариантов ответа не содержит текст;");
+                        hasError = true;
+                    }
+                }
             }
 
-
-            // Проверьте, если Type равен 0, то Single не должен быть -1
-            //if (test.Tickets.Any(ticket => ticket.Type == 0 && ticket.Single != -1))
-            //{
-            //    return BadRequest("If Type is 0, then Single should not be -1.");
-            //}
+            if (hasError)
+                return BadRequest(errorMsgBuilder.ToString());
 
             _context.Tests.Add(test);
             await _context.SaveChangesAsync();

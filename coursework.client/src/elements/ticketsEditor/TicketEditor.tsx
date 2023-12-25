@@ -3,7 +3,7 @@ import { ReactNode, useState } from "react";
 import React from "react";
 
 import EditableTicket from "./EditableTicket";
-import { Typography, AppBar, Box, Button, Card, CardActions, CardHeader, CardMedia, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Toolbar, TextField } from "@mui/material";
+import { Typography, AppBar, Box, Button, Card, CardActions, CardHeader, CardMedia, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Toolbar, TextField, Snackbar, Alert, AlertTitle } from "@mui/material";
 import { ITicket } from "./ITicket";
 import { EmptyTicket } from "./TicketConstants";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
@@ -80,11 +80,23 @@ type SaveTestContextParams = [boolean, React.Dispatch<boolean>];
 
 const SaveTestContext = React.createContext<SaveTestContextParams>({} as SaveTestContextParams);
 
+type ErrContextParams = [boolean, React.Dispatch<boolean>, string, React.Dispatch<string>];
+
+const ErrContext = React.createContext<ErrContextParams>({} as ErrContextParams);
+
+type SucContextParams = [boolean, React.Dispatch<boolean>];
+
+const SucContext = React.createContext<SucContextParams>({} as SucContextParams);
+
 function SaveTestDialog() {
     const [tickets, setTickets, , setTicketIdx] = React.useContext(TicketEditorContext);
+    const [, setErr, , setErrorMsg] = React.useContext(ErrContext);
+    const [, setSuc] = React.useContext(SucContext);
     const [open, setOpen] = React.useContext(SaveTestContext);
 
+
     const [name, setName] = React.useState<string>("");
+
 
     return (
         <Dialog
@@ -96,7 +108,7 @@ function SaveTestDialog() {
             </DialogTitle>
             <DialogContent>
                 <TextField
-                    sx={{marginTop: "1em"}}
+                    sx={{ marginTop: "1em" }}
                     fullWidth
                     multiline={false}
                     label="Название теста"
@@ -112,6 +124,7 @@ function SaveTestDialog() {
                 <Button
                     color="success"
                     onClick={() => {
+                        setName("");
                         fetch("api/Tests", {
                             method: "POST",
                             headers: {
@@ -120,20 +133,23 @@ function SaveTestDialog() {
                             },
                             body: JSON.stringify(convertTestToFetchedTest({ name: name, tickets: tickets }))
                         }).then(r => {
-                            if (!r.ok)
-                                console.log(r.statusText)
-                            else {
+                            if (r.ok) {
                                 setTickets([]);
                                 setTicketIdx(-1);
                                 localStorage.removeItem("tickets");
                                 localStorage.removeItem("ticketIdx");
+                                setSuc(true);
                             }
-                            return r.json();
+                            else {
+                                r.json().then(d => setErrorMsg(d));
+                                setErr(true);
+                            }
                         });
 
                         setOpen(false);
                     }}
                 >Да</Button>
+
                 <Button
                     color="primary"
                     onClick={() => setOpen(false)}
@@ -322,6 +338,11 @@ export const TicketEditorContext = React.createContext<TicketEditorContextProps>
 const scrollToBottomTrigger = createTrigger();
 
 function TicketEditor(): ReactNode {
+    const [err, setErr] = React.useState<boolean>(false);
+    const [suc, setSuc] = React.useState<boolean>(false);
+    const [errorMsg, setErrorMsg] = React.useState<string>("");
+
+
     const [tickets, setTickets] = React.useState<ITicket[]>((): ITicket[] => {
         const saved = localStorage.getItem("tickets");
         const initial = saved ? JSON.parse(saved) : [];
@@ -354,9 +375,47 @@ function TicketEditor(): ReactNode {
 
     return (
         <TicketEditorContext.Provider value={[tickets, setTickets, currentTicketIdx, setCurrentTicketIdx]}>
-            {currentTicketIdx === -1 && <TicketsPreviewList ref={lastTicketPreviewRef} />}
-            {currentTicketIdx !== -1 && <EditableTicket />}
+            <ErrContext.Provider value={[err, setErr, errorMsg, setErrorMsg]}>
+                <SucContext.Provider value={[suc, setSuc]}>
+                    {currentTicketIdx === -1 && <TicketsPreviewList ref={lastTicketPreviewRef} />}
+                    {currentTicketIdx !== -1 && <EditableTicket />}
+                    <Snackbar
+                        open={err}
+                        onClose={() => {
+                            setErr(false)
+                        }}
+                    >
+                        <Alert
+                            sx={{ width: '100%' }}
+                            severity="error"
+                            onClose={() => {
+                                setErr(false)
+                            }}>
+                            <AlertTitle>Ошибка</AlertTitle>
+                            <Typography>{errorMsg}</Typography>
+                        </Alert>
+
+                    </Snackbar>
+                    <Snackbar
+                        open={suc}
+                        onClose={() => {
+                            setSuc(false)
+                        }}
+                    >
+                        <Alert
+                            sx={{ width: '100%' }}
+                            severity="success"
+                            onClose={() => {
+                                setSuc(false);
+                            }}>
+                            <AlertTitle>Отправлено</AlertTitle>
+                            <Typography>Тест успешно добавлен в банк тестов</Typography>
+                        </Alert>
+                    </Snackbar>
+                </SucContext.Provider>
+            </ErrContext.Provider>
         </TicketEditorContext.Provider >
+
     )
 }
 
