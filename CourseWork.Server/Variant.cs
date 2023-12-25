@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace CourseWork.Server;
+﻿namespace CourseWork.Server;
 
 public partial class Variant
 {
