@@ -77,6 +77,28 @@ namespace CourseWork.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<Test>> PostTest(Test test)
         {
+            // Проверьте, не имеет ли какой-либо связанный с ним билет Тип не равен 0, 1 или 2
+            if (test.Tickets.Any(ticket => ticket.Type < 0 || ticket.Type > 2))
+            {
+                return BadRequest("Invalid Type in associated Ticket(s). Type must be 0, 1, or 2.");
+            }
+
+            if (test.Tickets.Any(ticket => ticket.Cost == 0))
+            {
+                return BadRequest("Cost in associated Ticket(s) cannot be 0.");
+            }
+
+            if (test.Tickets == null || !test.Tickets.Any())
+            {
+                return BadRequest("The Tickets collection cannot be empty.");
+            }
+
+            // Проверьте, если Type равен 0, то Single не должен быть -1
+            //if (test.Tickets.Any(ticket => ticket.Type == 0 && ticket.Single != -1))
+            //{
+            //    return BadRequest("If Type is 0, then Single should not be -1.");
+            //}
+
             _context.Tests.Add(test);
             await _context.SaveChangesAsync();
 
