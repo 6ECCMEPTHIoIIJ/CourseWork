@@ -9,9 +9,11 @@ public partial class Test
 
     public string Name { get; set; } = null!;
 
-    public Guid TeacherId { get; set; }
+    public Guid? TeacherId { get; set; }
 
-    public virtual Teacher Teacher { get; set; } = null!;
+    public bool Passed { get; set; }
+
+    public virtual Teacher? Teacher { get; set; }
 
     public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

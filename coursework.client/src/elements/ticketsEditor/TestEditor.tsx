@@ -3,7 +3,7 @@ import { ReactNode, useState } from "react";
 import React from "react";
 
 import EditableTicket from "./EditableTicket";
-import { Typography, AppBar, Box, Button, Card, CardActions, CardHeader, CardMedia, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Toolbar, TextField } from "@mui/material";
+import { Typography, AppBar, Box, Button, Card, CardActions, CardHeader, CardMedia, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Toolbar, TextField, CircularProgress } from "@mui/material";
 import { EmptyTicket } from "./TicketConstants";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import { AddOutlined, DeleteOutlined, EditOutlined } from "@mui/icons-material";
@@ -18,7 +18,6 @@ interface TicketPreviewData {
 }
 
 export interface ITest {
-    id: UUID;
     name: string;
     tickets: ITicket[];
 }
@@ -32,7 +31,69 @@ type TicketDiscardContextParams = [boolean, React.Dispatch<boolean>];
 
 const TicketDiscardContext = React.createContext<TicketDiscardContextParams>({} as TicketDiscardContextParams);
 
-function TicketPreview(params: { i: number}) {
+export interface IFetchedTeacher {
+    firstname: string;
+    lastname: string;
+    patronymic: string;
+    login: string;
+    password: string;
+    tests: IFetchedTest[];
+}
+
+export interface IFetchedTest {
+    name: string;
+    tickets: IFetchedTicket[];
+    teacher: IFetchedTeacher;
+}
+
+export interface IFetchedTicket {
+    type: number;
+    question: string;
+    description: string;
+    cost: number;
+    input?: IInput;
+    multiples?: IChoise[];
+    single?: IChoise;
+    variants?: IInput[];
+}
+
+export interface IChoise {
+    data: number;
+}
+
+export interface IInput {
+    data: string;
+}
+
+export function convertTestToFetchedTest(test: ITest) {
+    return {
+        name: test.name,
+        tickets: test.tickets.map(ticket => {
+            return {
+                type: ticket.type,
+                question: ticket.data.question,
+                description: ticket.data.description,
+                cost: ticket.data.cost,
+                single: ticket.type === 0 ? { data: ticket.answer.single } : undefined,
+                multiples: ticket.type === 1 ? ticket.answer.multiple.map(multiple => {
+                    return {
+                        data: multiple
+                    };
+                }) : undefined,
+                input: ticket.type === 2 ? { data: ticket.answer.input } : undefined,
+                variants: ticket.type === 0 || ticket.type === 1 ? ticket.answer.variants.map(variant => {
+                    return {
+                        data: variant
+                    };
+                }) : undefined
+            };
+        })
+    }
+}
+
+function TicketPreview(params: { i: number }) {
+    const [tests, setTests] = React.useContext();
+
     return (
         <React.Fragment>
             <Card variant="outlined">
@@ -68,16 +129,16 @@ function TicketPreview(params: { i: number}) {
                     </Button>
                 </CardActions>
             </Card>
-            <TicketPreviewContext.Provider value={[openDeleteDialog, setOpenDeleteDialog]}>
-                <DeleteTicketDialog i={params.i} />
-            </TicketPreviewContext.Provider>
+            {/*<TicketPreviewContext.Provider value={[openDeleteDialog, setOpenDeleteDialog]}>*/}
+            {/*    <DeleteTicketDialog i={params.i} />*/}
+            {/*</TicketPreviewContext.Provider>*/}
         </React.Fragment>
     )
 }
 
 function DiscardTicketDialog() {
     const [open, setOpen] = React.useContext(TicketDiscardContext);
-    const [testName, setTestName] = 
+    //const [testName, setTestName] = 
 
     return (
         <Dialog
@@ -92,7 +153,6 @@ function DiscardTicketDialog() {
                     fullWidth
                     multiline={true}
                     placeholder="Введите текст..."
-                    value={ticket.data.description}
                     label="Название теста"
                 />
 
@@ -134,7 +194,7 @@ export const TicketEditorContext = React.createContext<TicketEditorContextProps>
 function TestEditor() {
     const [openDiscardDialog, setOpenDiscardDialog] = React.useState<boolean>(false);
 
-    const [tests, setTests] = React.useState<ITest[]>();
+    const [tests, setTests] = React.useState<IFetchedTest[]>();
 
     React.useEffect(() => {
         populateTestsData();
@@ -157,17 +217,21 @@ function TestEditor() {
                 </Toolbar>
             </AppBar>
             <Toolbar />
-           
+
             {tests !== undefined && <Grid2 container spacing={3}>
-                {tests.map((ticket, i) => (
-                    <TicketPreviewGrid key={i} content={<TicketPreview i={i} type={ticket.type} />} />
+                {tests.map((_, i) => (
+                    <TicketPreviewGrid key={i} content={<TicketPreview i={i} />} />
                 ))}
             </Grid2>}
+            {tests === undefined && <CircularProgress />}
         </React.Fragment>
     )
 
     function populateTestsData() {
-
+        fetch('api/Tests').then(r => r.json()).then(data => {
+            setTests(data);
+            console.log(data);
+        });
     }
 }
 

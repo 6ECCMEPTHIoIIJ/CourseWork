@@ -11,6 +11,7 @@ import { AddOutlined, DeleteOutlined, EditOutlined } from "@mui/icons-material";
 
 import createTrigger from "react-use-trigger";
 import useTriggerEffect from "react-use-trigger/useTriggerEffect";
+import { convertTestToFetchedTest } from "./TestEditor";
 
 interface TicketPreviewData {
     url: string;
@@ -153,15 +154,23 @@ const TicketsPreviewList = React.forwardRef((_: any, ref: React.ForwardedRef<HTM
                 <Toolbar>
                     <Button
                         color="primary"
-                        
-                    >
+                        onClick={() => {
+                            fetch("api/Tests", {
+                                method: "POST",
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(convertTestToFetchedTest({ name: "Test", tickets: tickets }))
+                            }).then(r => r.json()).then(data => console.log(data));
+                        }}>
                         <Typography >
                             СОХРАНИТЬ
                         </Typography>
                     </Button>
                     <Button
                         color="error"
-                       >
+                    >
                         <Typography >
                             ОТМЕНИТЬ ИЗМЕНЕНИЯ
                         </Typography>

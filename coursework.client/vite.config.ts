@@ -46,11 +46,31 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
+            '^/api/Tests': {
                 target: 'https://localhost:7269/',
                 secure: false
             },
-            '^/api/tets': {
+            '^/api/Tickets': {
+                target: 'https://localhost:7269/',
+                secure: false
+            },
+            '^/api/Inputs': {
+                target: 'https://localhost:7269/',
+                secure: false
+            },
+            '^/api/Singles': {
+                target: 'https://localhost:7269/',
+                secure: false
+            },
+            '^/api/Multiples': {
+                target: 'https://localhost:7269/',
+                secure: false
+            },
+            '^/api/Students': {
+                target: 'https://localhost:7269/',
+                secure: false
+            },
+            '^/api/Teachers': {
                 target: 'https://localhost:7269/',
                 secure: false
             }

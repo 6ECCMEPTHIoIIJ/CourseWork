@@ -5,9 +5,11 @@ namespace CourseWork.Server;
 
 public partial class Single
 {
-    public Guid TicketId { get; set; }
+    public Guid Id { get; set; }
 
     public int Data { get; set; }
 
-    public virtual Ticket Ticket { get; set; } = null!;
+    public Guid? TicketId { get; set; }
+
+    public virtual Ticket? Ticket { get; set; }
 }

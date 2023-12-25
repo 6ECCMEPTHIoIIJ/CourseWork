@@ -1,6 +1,6 @@
 @CourseWork.Server_HostAddress = http://localhost:5066
 
-GET {{CourseWork.Server_HostAddress}}/weatherforecast/
+GET {{CourseWork.Server_HostAddress}}/api/students/
 Accept: application/json
 
 ###

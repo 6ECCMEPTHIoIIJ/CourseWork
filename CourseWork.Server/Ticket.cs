@@ -7,13 +7,15 @@ public partial class Ticket
 {
     public Guid Id { get; set; }
 
+    public int Type { get; set; }
+
     public string Question { get; set; } = null!;
 
-    public string? Description { get; set; }
+    public string Description { get; set; } = null!;
 
     public int Cost { get; set; }
 
-    public Guid TestId { get; set; }
+    public Guid? TestId { get; set; }
 
     public virtual Input? Input { get; set; }
 
@@ -23,7 +25,7 @@ public partial class Ticket
 
     public virtual Single? Single { get; set; }
 
-    public virtual Test Test { get; set; } = null!;
+    public virtual Test? Test { get; set; }
 
     public virtual ICollection<Variant> Variants { get; set; } = new List<Variant>();
 }

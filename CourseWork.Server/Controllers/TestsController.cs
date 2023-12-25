@@ -24,12 +24,7 @@ namespace CourseWork.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Test>>> GetTests()
         {
-            return await _context.Tests
-                .Include(t => t.Tickets).ThenInclude(t => t.Variants)
-                .Include(t => t.Tickets).ThenInclude(t => t.Multiples)
-                .Include(t => t.Tickets).ThenInclude(t => t.Single)
-                .Include(t => t.Tickets).ThenInclude(t => t.Input)
-                .ToListAsync();
+            return await _context.Tests.ToListAsync();
         }
 
         // GET: api/Tests/5
@@ -83,21 +78,7 @@ namespace CourseWork.Server.Controllers
         public async Task<ActionResult<Test>> PostTest(Test test)
         {
             _context.Tests.Add(test);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (TestExists(test.Id))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTest", new { id = test.Id }, test);
         }

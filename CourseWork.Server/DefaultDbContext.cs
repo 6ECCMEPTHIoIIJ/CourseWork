@@ -17,17 +17,17 @@ public partial class DefaultDbContext : DbContext
 
     public virtual DbSet<Input> Inputs { get; set; }
 
-    public virtual DbSet<InputsPassed> InputsPasseds { get; set; }
-
     public virtual DbSet<Multiple> Multiples { get; set; }
 
-    public virtual DbSet<MultiplesPassed> MultiplesPasseds { get; set; }
+    public virtual DbSet<PassedInput> PassedInputs { get; set; }
+
+    public virtual DbSet<PassedMultiple> PassedMultiples { get; set; }
+
+    public virtual DbSet<PassedSingle> PassedSingles { get; set; }
 
     public virtual DbSet<PassedTicket> PassedTickets { get; set; }
 
     public virtual DbSet<Single> Singles { get; set; }
-
-    public virtual DbSet<SinglesPassed> SinglesPasseds { get; set; }
 
     public virtual DbSet<Student> Students { get; set; }
 
@@ -41,49 +41,28 @@ public partial class DefaultDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("User Id=gen_user;Password=o*=1/.CX$J8ew/;Server=185.154.195.121;Port=5432;Database=default_db");
+        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=default_db;Username=postgres;Password=Pg_2023_Admin");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.UseCollation("en_US.UTF-8");
-
         modelBuilder.Entity<Input>(entity =>
         {
-            entity.HasKey(e => e.TicketId).HasName("inputs_pkey");
+            entity.HasKey(e => e.Id).HasName("inputs_pkey");
 
             entity.ToTable("inputs");
 
-            entity.Property(e => e.TicketId)
-                .ValueGeneratedNever()
-                .HasColumnName("ticket_id");
-            entity.Property(e => e.Data)
-                .HasMaxLength(1024)
-                .HasColumnName("data");
+            entity.HasIndex(e => e.TicketId, "inputs_ticket_id_key").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            entity.Property(e => e.Data).HasColumnName("data");
+            entity.Property(e => e.TicketId).HasColumnName("ticket_id");
 
             entity.HasOne(d => d.Ticket).WithOne(p => p.Input)
                 .HasForeignKey<Input>(d => d.TicketId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("inputs_ticket_id_fkey");
-        });
-
-        modelBuilder.Entity<InputsPassed>(entity =>
-        {
-            entity.HasKey(e => e.PassedTicketId).HasName("input_passed_pkey");
-
-            entity.ToTable("inputs_passed");
-
-            entity.Property(e => e.PassedTicketId)
-                .ValueGeneratedNever()
-                .HasColumnName("passed_ticket_id");
-            entity.Property(e => e.Correct).HasColumnName("correct");
-            entity.Property(e => e.Data)
-                .HasMaxLength(1024)
-                .HasColumnName("data");
-
-            entity.HasOne(d => d.PassedTicket).WithOne(p => p.InputsPassed)
-                .HasForeignKey<InputsPassed>(d => d.PassedTicketId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("input_passed_passed_ticket_id_fkey");
         });
 
         modelBuilder.Entity<Multiple>(entity =>
@@ -93,33 +72,74 @@ public partial class DefaultDbContext : DbContext
             entity.ToTable("multiples");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
             entity.Property(e => e.Data).HasColumnName("data");
             entity.Property(e => e.TicketId).HasColumnName("ticket_id");
 
             entity.HasOne(d => d.Ticket).WithMany(p => p.Multiples)
                 .HasForeignKey(d => d.TicketId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("multiples_ticket_id_fkey");
         });
 
-        modelBuilder.Entity<MultiplesPassed>(entity =>
+        modelBuilder.Entity<PassedInput>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("multiples_passed_pkey");
+            entity.HasKey(e => e.Id).HasName("passed_inputs_pkey");
 
-            entity.ToTable("multiples_passed");
+            entity.ToTable("passed_inputs");
+
+            entity.HasIndex(e => e.PassedTicketId, "passed_inputs_passed_ticket_id_key").IsUnique();
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            entity.Property(e => e.Correct).HasColumnName("correct");
+            entity.Property(e => e.Data).HasColumnName("data");
+            entity.Property(e => e.PassedTicketId).HasColumnName("passed_ticket_id");
+
+            entity.HasOne(d => d.PassedTicket).WithOne(p => p.PassedInput)
+                .HasForeignKey<PassedInput>(d => d.PassedTicketId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("passed_inputs_passed_ticket_id_fkey");
+        });
+
+        modelBuilder.Entity<PassedMultiple>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("passed_multiples_pkey");
+
+            entity.ToTable("passed_multiples");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
             entity.Property(e => e.Data).HasColumnName("data");
             entity.Property(e => e.PassedTicketId).HasColumnName("passed_ticket_id");
 
-            entity.HasOne(d => d.PassedTicket).WithMany(p => p.MultiplesPasseds)
+            entity.HasOne(d => d.PassedTicket).WithMany(p => p.PassedMultiples)
                 .HasForeignKey(d => d.PassedTicketId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("multiples_passed_passed_ticket_id_fkey");
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("passed_multiples_passed_ticket_id_fkey");
+        });
+
+        modelBuilder.Entity<PassedSingle>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("passed_singles_pkey");
+
+            entity.ToTable("passed_singles");
+
+            entity.HasIndex(e => e.PassedTicketId, "passed_singles_passed_ticket_id_key").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            entity.Property(e => e.Data).HasColumnName("data");
+            entity.Property(e => e.PassedTicketId).HasColumnName("passed_ticket_id");
+
+            entity.HasOne(d => d.PassedTicket).WithOne(p => p.PassedSingle)
+                .HasForeignKey<PassedSingle>(d => d.PassedTicketId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("passed_singles_passed_ticket_id_fkey");
         });
 
         modelBuilder.Entity<PassedTicket>(entity =>
@@ -129,57 +149,43 @@ public partial class DefaultDbContext : DbContext
             entity.ToTable("passed_tickets");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
             entity.Property(e => e.StudentId)
                 .HasMaxLength(10)
                 .IsFixedLength()
                 .HasColumnName("student_id");
-            entity.Property(e => e.TicketId).HasColumnName("ticket_id");
+            entity.Property(e => e.TickedId).HasColumnName("ticked_id");
 
             entity.HasOne(d => d.Student).WithMany(p => p.PassedTickets)
                 .HasForeignKey(d => d.StudentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("passed_tickets_student_id_fkey");
 
-            entity.HasOne(d => d.Ticket).WithMany(p => p.PassedTickets)
-                .HasForeignKey(d => d.TicketId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("passed_tickets_ticket_id_fkey");
+            entity.HasOne(d => d.Ticked).WithMany(p => p.PassedTickets)
+                .HasForeignKey(d => d.TickedId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("passed_tickets_ticked_id_fkey");
         });
 
         modelBuilder.Entity<Single>(entity =>
         {
-            entity.HasKey(e => e.TicketId).HasName("single_pkey");
+            entity.HasKey(e => e.Id).HasName("singles_pkey");
 
             entity.ToTable("singles");
 
-            entity.Property(e => e.TicketId)
-                .ValueGeneratedNever()
-                .HasColumnName("ticket_id");
+            entity.HasIndex(e => e.TicketId, "singles_ticket_id_key").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
             entity.Property(e => e.Data).HasColumnName("data");
+            entity.Property(e => e.TicketId).HasColumnName("ticket_id");
 
             entity.HasOne(d => d.Ticket).WithOne(p => p.Single)
                 .HasForeignKey<Single>(d => d.TicketId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("single_ticket_id_fkey");
-        });
-
-        modelBuilder.Entity<SinglesPassed>(entity =>
-        {
-            entity.HasKey(e => e.PassedTicketId).HasName("singles_passed_pkey");
-
-            entity.ToTable("singles_passed");
-
-            entity.Property(e => e.PassedTicketId)
-                .ValueGeneratedNever()
-                .HasColumnName("passed_ticket_id");
-            entity.Property(e => e.Data).HasColumnName("data");
-
-            entity.HasOne(d => d.PassedTicket).WithOne(p => p.SinglesPassed)
-                .HasForeignKey<SinglesPassed>(d => d.PassedTicketId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("singles_passed_passed_ticket_id_fkey");
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("singles_ticket_id_fkey");
         });
 
         modelBuilder.Entity<Student>(entity =>
@@ -190,100 +196,92 @@ public partial class DefaultDbContext : DbContext
 
             entity.Property(e => e.PassbookNumber)
                 .HasMaxLength(10)
+                .IsFixedLength()
                 .HasColumnName("passbook_number");
             entity.Property(e => e.Firstname)
-                .HasMaxLength(30)
+                .HasMaxLength(31)
                 .HasColumnName("firstname");
             entity.Property(e => e.Lastname)
-                .HasMaxLength(30)
+                .HasMaxLength(31)
                 .HasColumnName("lastname");
             entity.Property(e => e.Password)
-                .HasMaxLength(30)
-                .IsFixedLength()
+                .HasMaxLength(31)
                 .HasColumnName("password");
             entity.Property(e => e.Patronymic)
-                .HasMaxLength(30)
+                .HasMaxLength(31)
                 .HasColumnName("patronymic");
             entity.Property(e => e.StudentGroup)
-                .HasMaxLength(30)
+                .HasMaxLength(31)
                 .HasColumnName("student_group");
         });
 
         modelBuilder.Entity<Teacher>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("teacher_pkey");
+            entity.HasKey(e => e.Id).HasName("teachers_pkey");
 
             entity.ToTable("teachers");
 
-            entity.HasIndex(e => e.Login, "teacher_login_key").IsUnique();
-
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
             entity.Property(e => e.Firstname)
-                .HasMaxLength(30)
-                .IsFixedLength()
+                .HasMaxLength(31)
                 .HasColumnName("firstname");
             entity.Property(e => e.Lastname)
-                .HasMaxLength(30)
-                .IsFixedLength()
+                .HasMaxLength(31)
                 .HasColumnName("lastname");
             entity.Property(e => e.Login)
-                .HasMaxLength(30)
-                .IsFixedLength()
+                .HasMaxLength(31)
                 .HasColumnName("login");
             entity.Property(e => e.Password)
-                .HasMaxLength(30)
-                .IsFixedLength()
+                .HasMaxLength(31)
                 .HasColumnName("password");
             entity.Property(e => e.Patronymic)
-                .HasMaxLength(30)
-                .IsFixedLength()
+                .HasMaxLength(31)
                 .HasColumnName("patronymic");
         });
 
         modelBuilder.Entity<Test>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("test_pkey");
+            entity.HasKey(e => e.Id).HasName("tests_pkey");
 
             entity.ToTable("tests");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
-                .IsFixedLength()
                 .HasColumnName("name");
+            entity.Property(e => e.Passed)
+                .HasDefaultValue(false)
+                .HasColumnName("passed");
             entity.Property(e => e.TeacherId).HasColumnName("teacher_id");
 
             entity.HasOne(d => d.Teacher).WithMany(p => p.Tests)
                 .HasForeignKey(d => d.TeacherId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("test_teacher_id_fkey");
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("tests_teacher_id_fkey");
         });
 
         modelBuilder.Entity<Ticket>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("questions_pkey");
+            entity.HasKey(e => e.Id).HasName("tickets_pkey");
 
             entity.ToTable("tickets");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
             entity.Property(e => e.Cost).HasColumnName("cost");
-            entity.Property(e => e.Description)
-                .HasMaxLength(1024)
-                .HasColumnName("description");
-            entity.Property(e => e.Question)
-                .HasMaxLength(1024)
-                .HasColumnName("question");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Question).HasColumnName("question");
             entity.Property(e => e.TestId).HasColumnName("test_id");
+            entity.Property(e => e.Type).HasColumnName("type");
 
             entity.HasOne(d => d.Test).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.TestId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("tickets_test_id_fkey");
         });
 
@@ -294,17 +292,14 @@ public partial class DefaultDbContext : DbContext
             entity.ToTable("variants");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .HasDefaultValueSql("gen_random_uuid()")
                 .HasColumnName("id");
-            entity.Property(e => e.Data)
-                .HasMaxLength(255)
-                .IsFixedLength()
-                .HasColumnName("data");
+            entity.Property(e => e.Data).HasColumnName("data");
             entity.Property(e => e.TicketId).HasColumnName("ticket_id");
 
             entity.HasOne(d => d.Ticket).WithMany(p => p.Variants)
                 .HasForeignKey(d => d.TicketId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("variants_ticket_id_fkey");
         });
 

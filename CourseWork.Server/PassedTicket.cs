@@ -7,17 +7,17 @@ public partial class PassedTicket
 {
     public Guid Id { get; set; }
 
-    public Guid TicketId { get; set; }
+    public Guid? TickedId { get; set; }
 
-    public string StudentId { get; set; } = null!;
+    public string? StudentId { get; set; }
 
-    public virtual InputsPassed? InputsPassed { get; set; }
+    public virtual PassedInput? PassedInput { get; set; }
 
-    public virtual ICollection<MultiplesPassed> MultiplesPasseds { get; set; } = new List<MultiplesPassed>();
+    public virtual ICollection<PassedMultiple> PassedMultiples { get; set; } = new List<PassedMultiple>();
 
-    public virtual SinglesPassed? SinglesPassed { get; set; }
+    public virtual PassedSingle? PassedSingle { get; set; }
 
-    public virtual Student Student { get; set; } = null!;
+    public virtual Student? Student { get; set; }
 
-    public virtual Ticket Ticket { get; set; } = null!;
+    public virtual Ticket? Ticked { get; set; }
 }

@@ -5,7 +5,7 @@ import TicketEditor from './elements/ticketsEditor/TicketEditor';
 function App() {
        
     return (
-        <TestEditor />
+        <TicketEditor />
     )
 }
 
