@@ -103,6 +103,11 @@ namespace CourseWork.Server.Controllers
                 return BadRequest("Question in associated Ticket(s) cannot be empty or contain only spaces.");
             }
 
+            if (test.Tickets.Any(ticket => (ticket.Type == 0 || ticket.Type == 1) && (ticket.Variants == null || ticket.Variants.Count == 0)))
+            {
+                return BadRequest("If Type is 0 or 1, then Variants collection should not have a length of 0.");
+            }
+
             // Проверьте, если Type равен 0, то Single не должен быть -1
             //if (test.Tickets.Any(ticket => ticket.Type == 0 && ticket.Single != -1))
             //{
