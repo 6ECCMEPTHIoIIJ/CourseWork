@@ -12,7 +12,7 @@ import { TicketEditorContext } from "./TicketEditor"
 
 const scrollToBottomTrigger = createTrigger();
 
-type EditableTicketContextProps = [ITicket, React.Dispatch<ITicket>];
+type EditableTicketContextProps = [ITicket, React.Dispatch<ITicket>, boolean, React.Dispatch<boolean>];
 
 const EditableTicketContext = React.createContext<EditableTicketContextProps>({} as EditableTicketContextProps);
 
@@ -44,6 +44,7 @@ function DiscardTicketDialog() {
                         setTickets([...tickets]);
                         setCurrentTicketIdx(-1);
                         localStorage.removeItem("ticket");
+                        localStorage.removeItem("edited");
                         setOpen(false);
                     }}
                 >Да</Button>
@@ -57,7 +58,7 @@ function DiscardTicketDialog() {
 }
 
 function EditableTicketAnswerInput() {
-    const [ticket, setTicket] = React.useContext(EditableTicketContext);
+    const [ticket, setTicket, , setEdited] = React.useContext(EditableTicketContext);
 
     return (
         <TextField
@@ -69,6 +70,7 @@ function EditableTicketAnswerInput() {
             value={ticket.answer.input}
             label="Ответ"
             onChange={e => {
+                setEdited(true);
                 ticket.answer.input = e.target.value;
                 setTicket({ ...ticket });
             }} />
@@ -76,7 +78,7 @@ function EditableTicketAnswerInput() {
 }
 
 function EditableTicketAnswerSelect(params: { i: number, multiple: boolean }) {
-    const [ticket, setTicket] = React.useContext(EditableTicketContext);
+    const [ticket, setTicket, , setEdited] = React.useContext(EditableTicketContext);
 
     const checkedIdx = ticket.answer.multiple.findIndex((value) => params.i === value);
 
@@ -87,6 +89,7 @@ function EditableTicketAnswerSelect(params: { i: number, multiple: boolean }) {
             tabIndex={- 1}
             disableRipple
             onClick={() => {
+                setEdited(true);
                 if (checkedIdx === -1)
                     ticket.answer.multiple.push(params.i);
                 else
@@ -101,6 +104,7 @@ function EditableTicketAnswerSelect(params: { i: number, multiple: boolean }) {
             tabIndex={- 1}
             disableRipple
             onClick={() => {
+                setEdited(true);
                 ticket.answer.single = params.i;
                 setTicket({ ...ticket });
             }}
@@ -109,7 +113,7 @@ function EditableTicketAnswerSelect(params: { i: number, multiple: boolean }) {
 }
 
 function EditableTicketVariantInput(params: { i: number }) {
-    const [ticket, setTicket] = React.useContext(EditableTicketContext);
+    const [ticket, setTicket, , setEdited] = React.useContext(EditableTicketContext);
 
     return (
         <TextField
@@ -121,6 +125,7 @@ function EditableTicketVariantInput(params: { i: number }) {
             value={ticket.answer.variants[params.i]}
             label="Ответ"
             onChange={e => {
+                setEdited(true);
                 ticket.answer.variants[params.i] = e.target.value;
                 setTicket({ ...ticket });
             }} />
@@ -128,12 +133,13 @@ function EditableTicketVariantInput(params: { i: number }) {
 }
 
 function DeleteTicketVariantButton(params: { i: number }) {
-    const [ticket, setTicket] = React.useContext(EditableTicketContext);
+    const [ticket, setTicket, , setEdited] = React.useContext(EditableTicketContext);
 
     return (
         <IconButton
             edge="end" color="error"
             onClick={() => {
+                setEdited(true);
                 ticket.answer.variants.splice(params.i, 1);
                 if (ticket.answer.single === params.i)
                     ticket.answer.single = -1;
@@ -156,7 +162,7 @@ function DeleteTicketVariantButton(params: { i: number }) {
 }
 
 function AddTicketVariantButton() {
-    const [ticket, setTicket] = React.useContext(EditableTicketContext);
+    const [ticket, setTicket,, setEdited] = React.useContext(EditableTicketContext);
 
     const lastAnswerRef = React.createRef<HTMLButtonElement>();
 
@@ -172,6 +178,7 @@ function AddTicketVariantButton() {
             sx={{ width: "40%", height: "48px" }}
 
             onClick={() => {
+                setEdited(true);
                 ticket.answer.variants.push("");
                 setTicket({ ...ticket });
                 scrollToBottomTrigger();
@@ -208,7 +215,7 @@ function EditableTicketAnswerChoise(params: { multiple: boolean }) {
 }
 
 function EditableTicketQuestion() {
-    const [ticket, setTicket] = React.useContext(EditableTicketContext);
+    const [ticket, setTicket, , setEdited] = React.useContext(EditableTicketContext);
 
     return (
         <TextField
@@ -221,6 +228,7 @@ function EditableTicketQuestion() {
             value={ticket.data.question}
             label="Вопрос"
             onChange={e => {
+                setEdited(true);
                 ticket.data.question = e.target.value;
                 setTicket({ ...ticket });
             }} />
@@ -228,7 +236,7 @@ function EditableTicketQuestion() {
 }
 
 function EditableTicketDescription() {
-    const [ticket, setTicket] = React.useContext(EditableTicketContext);
+    const [ticket, setTicket, , setEdited] = React.useContext(EditableTicketContext);
 
     return (
         <TextField
@@ -241,6 +249,7 @@ function EditableTicketDescription() {
             value={ticket.data.description}
             label="Пояснение"
             onChange={e => {
+                setEdited(true);
                 ticket.data.description = e.target.value;
                 setTicket({ ...ticket });
             }} />
@@ -248,7 +257,7 @@ function EditableTicketDescription() {
 }
 
 function EditableTicketCost() {
-    const [ticket, setTicket] = React.useContext(EditableTicketContext);
+    const [ticket, setTicket, , setEdited] = React.useContext(EditableTicketContext);
 
     return (
         <TextField
@@ -260,6 +269,7 @@ function EditableTicketCost() {
             value={ticket.data.cost !== 0 ? ticket.data.cost : ""}
             label="Стоимость"
             onChange={e => {
+                setEdited(true);
                 const num: number = parseInt(e.target.value);
                 ticket.data.cost = isNaN(num)
                     ? 0
@@ -270,7 +280,7 @@ function EditableTicketCost() {
 }
 
 function EditableTicketTypeSelect() {
-    const [ticket, setTicket] = React.useContext(EditableTicketContext);
+    const [ticket, setTicket, , setEdited] = React.useContext(EditableTicketContext);
 
     return (
         <React.Fragment>
@@ -278,6 +288,7 @@ function EditableTicketTypeSelect() {
                 <Select
                     value={ticket.type !== -1 ? ticket.type : ''}
                     onChange={e => {
+                        setEdited(true);
                         ticket.type = e.target.value as number;
                         setTicket({ ...ticket });
                     }}>
@@ -293,6 +304,12 @@ function EditableTicketTypeSelect() {
 
 function EditableTicket() {
     const [tickets, setTickets, currentTicketIdx, setCurrentTicketIdx] = React.useContext(TicketEditorContext);
+
+    const [edited, setEdited] = React.useState<boolean>((): boolean => {
+        const saved = localStorage.getItem("edited");
+        const initial = saved ? JSON.parse(saved) : false;
+        return initial as boolean;
+    });
 
     const [ticket, setTicket] = React.useState<ITicket>((): ITicket => {
         const saved = localStorage.getItem("ticket");
@@ -310,6 +327,10 @@ function EditableTicket() {
     });
 
     React.useEffect(() => {
+        localStorage.setItem("edited", JSON.stringify(edited));
+    }, [edited]);
+
+    React.useEffect(() => {
         localStorage.setItem("ticket", JSON.stringify(ticket));
     }, [ticket]);
 
@@ -317,30 +338,40 @@ function EditableTicket() {
 
 
     return (
-        <EditableTicketContext.Provider value={[ticket, setTicket]}>
+        <EditableTicketContext.Provider value={[ticket, setTicket, edited, setEdited]}>
             <AppBar component="nav" color="default" variant="outlined" elevation={0}>
                 <Toolbar>
-                    <Button
+                    {edited && <Button
                         color="primary"
                         onClick={() => {
                             tickets[currentTicketIdx] = ticket;
                             setTickets([...tickets]);
                             setCurrentTicketIdx(-1);
                             localStorage.removeItem("ticket");
+                            localStorage.removeItem("edited");
                         }}
                     >
                         <Typography >
                             СОХРАНИТЬ
                         </Typography>
-                    </Button>
+                    </Button>}
                     <Button
-                        color="error"
+                        color={edited ? "error" : "primary"}
                         onClick={() => {
-                            setOpenDiscardDialog(true);
+                            if (edited)
+                                setOpenDiscardDialog(true);
+                            else {
+                                setCurrentTicketIdx(-1);
+                                localStorage.removeItem("ticket");
+                                localStorage.removeItem("edited");
+                            }
                         }}>
-                        <Typography >
+                        {edited && <Typography >
                             ОТМЕНИТЬ ИЗМЕНЕНИЯ
-                        </Typography>
+                        </Typography>}
+                        {!edited && <Typography >
+                            НАЗАД
+                        </Typography>}
                     </Button>
                 </Toolbar>
             </AppBar>

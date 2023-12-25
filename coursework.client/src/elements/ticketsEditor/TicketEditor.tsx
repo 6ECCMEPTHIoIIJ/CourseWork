@@ -3,7 +3,7 @@ import { ReactNode, useState } from "react";
 import React from "react";
 
 import EditableTicket from "./EditableTicket";
-import { Typography, AppBar, Box, Button, Card, CardActions, CardHeader, CardMedia, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Toolbar } from "@mui/material";
+import { Typography, AppBar, Box, Button, Card, CardActions, CardHeader, CardMedia, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Toolbar, TextField } from "@mui/material";
 import { ITicket } from "./ITicket";
 import { EmptyTicket } from "./TicketConstants";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
@@ -64,6 +64,114 @@ function DeleteTicketDialog(params: { i: number }) {
                     onClick={() => {
                         tickets.splice(params.i, 1);
                         setTickets([...tickets]);
+                        setOpen(false);
+                    }}
+                >Да</Button>
+                <Button
+                    color="primary"
+                    onClick={() => setOpen(false)}
+                >Нет</Button>
+            </DialogActions>
+        </Dialog >
+    );
+}
+
+type SaveTestContextParams = [boolean, React.Dispatch<boolean>];
+
+const SaveTestContext = React.createContext<SaveTestContextParams>({} as SaveTestContextParams);
+
+function SaveTestDialog() {
+    const [tickets, setTickets, , setTicketIdx] = React.useContext(TicketEditorContext);
+    const [open, setOpen] = React.useContext(SaveTestContext);
+
+    const [name, setName] = React.useState<string>("");
+
+    return (
+        <Dialog
+            open={open}
+            onClose={() => setOpen(false)}
+        >
+            <DialogTitle>
+                Вы уверены, что хотите добавить тест в банк тестов?
+            </DialogTitle>
+            <DialogContent>
+                <TextField
+                    sx={{marginTop: "1em"}}
+                    fullWidth
+                    multiline={false}
+                    label="Название теста"
+                    placeholder="Введите текст..."
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                />
+                <DialogContentText>
+                    Данное действие нельзя будет отменить в дальнейшем
+                </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+                <Button
+                    color="success"
+                    onClick={() => {
+                        fetch("api/Tests", {
+                            method: "POST",
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(convertTestToFetchedTest({ name: name, tickets: tickets }))
+                        }).then(r => {
+                            if (!r.ok)
+                                console.log(r.statusText)
+                            else {
+                                setTickets([]);
+                                setTicketIdx(-1);
+                                localStorage.removeItem("tickets");
+                                localStorage.removeItem("ticketIdx");
+                            }
+                            return r.json();
+                        });
+
+                        setOpen(false);
+                    }}
+                >Да</Button>
+                <Button
+                    color="primary"
+                    onClick={() => setOpen(false)}
+                >Нет</Button>
+            </DialogActions>
+        </Dialog >
+    );
+}
+
+type DiscardTestContextParams = [boolean, React.Dispatch<boolean>];
+
+const DiscardTestContext = React.createContext<DiscardTestContextParams>({} as DiscardTestContextParams);
+
+function DiscardTestDialog() {
+    const [, setTickets, , setTicketIdx] = React.useContext(TicketEditorContext);
+    const [open, setOpen] = React.useContext(DiscardTestContext);
+
+    return (
+        <Dialog
+            open={open}
+            onClose={() => setOpen(false)}
+        >
+            <DialogTitle>
+                Вы уверены, что хотите отменить все измения?
+            </DialogTitle>
+            <DialogContent>
+                <DialogContentText>
+                    Данное действие нельзя будет отменить в дальнейшем
+                </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+                <Button
+                    color="error"
+                    onClick={() => {
+                        setTickets([]);
+                        setTicketIdx(-1);
+                        localStorage.removeItem("tickets");
+                        localStorage.removeItem("ticketIdx");
                         setOpen(false);
                     }}
                 >Да</Button>
@@ -147,34 +255,45 @@ function TicketAddButton() {
 
 const TicketsPreviewList = React.forwardRef((_: any, ref: React.ForwardedRef<HTMLDivElement>) => {
     const [tickets] = React.useContext(TicketEditorContext);
+    const [openSave, setOpenSave] = React.useState<boolean>(false);
+    const [openDiscard, setOpenDiscard] = React.useState<boolean>(false);
 
     return (
         <React.Fragment>
             <AppBar component="nav" color="default" variant="outlined" elevation={0}>
                 <Toolbar>
-                    <Button
+                    {tickets.length != 0 && <Button
                         color="primary"
                         onClick={() => {
-                            fetch("api/Tests", {
-                                method: "POST",
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(convertTestToFetchedTest({ name: "Test", tickets: tickets }))
-                            }).then(r => r.json()).then(data => console.log(data));
+                            setOpenSave(true);
                         }}>
                         <Typography >
-                            СОХРАНИТЬ
+                            ДОБАВИТЬ В БАНК ТЕСТОВ
                         </Typography>
-                    </Button>
+                    </Button>}
+                    <SaveTestContext.Provider value={[openSave, setOpenSave]}>
+                        <SaveTestDialog />
+                    </SaveTestContext.Provider>
                     <Button
-                        color="error"
-                    >
-                        <Typography >
-                            ОТМЕНИТЬ ИЗМЕНЕНИЯ
-                        </Typography>
+                        color={tickets.length != 0 ? "error" : "primary"}
+                        onClick={() => {
+                            if (tickets.length != 0)
+                                setOpenDiscard(true);
+                            else {
+                                localStorage.removeItem("tickets");
+                                localStorage.removeItem("ticketIdx");
+                            }
+                        }}>
+                        {tickets.length != 0 && <Typography >
+                            УДАЛИТЬ ТЕСТ
+                        </Typography>}
+                        {tickets.length == 0 && <Typography >
+                            НАЗАД
+                        </Typography>}
                     </Button>
+                    <DiscardTestContext.Provider value={[openDiscard, setOpenDiscard]}>
+                        <DiscardTestDialog />
+                    </DiscardTestContext.Provider>
                 </Toolbar>
             </AppBar>
             <Toolbar />
