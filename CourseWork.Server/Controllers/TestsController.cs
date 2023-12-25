@@ -93,6 +93,16 @@ namespace CourseWork.Server.Controllers
                 return BadRequest("The Tickets collection cannot be empty.");
             }
 
+            if (test.Tickets.Any(ticket => string.IsNullOrWhiteSpace(ticket.Description)))
+            {
+                return BadRequest("Description in associated Ticket(s) cannot be empty or contain only spaces.");
+            }
+
+            if (test.Tickets.Any(ticket => string.IsNullOrWhiteSpace(ticket.Question)))
+            {
+                return BadRequest("Question in associated Ticket(s) cannot be empty or contain only spaces.");
+            }
+
             // Проверьте, если Type равен 0, то Single не должен быть -1
             //if (test.Tickets.Any(ticket => ticket.Type == 0 && ticket.Single != -1))
             //{
