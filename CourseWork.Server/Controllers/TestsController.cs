@@ -88,7 +88,7 @@ namespace CourseWork.Server.Controllers
                 return BadRequest("Cost in associated Ticket(s) cannot be 0.");
             }
 
-            if (test.Tickets == null || !test.Tickets.Any())
+            if (test.Tickets == null || test.Tickets.Count == 0)
             {
                 return BadRequest("The Tickets collection cannot be empty.");
             }
@@ -108,7 +108,7 @@ namespace CourseWork.Server.Controllers
                 return BadRequest("If Type is 0 or 1, then Variants collection should not have a length of 0.");
             }
 
-            if (test.Tickets.Any(ticket => ticket.Type == 0 && ticket.Single != null && ticket.Single.Data == -1))
+            if (test.Tickets.Any(ticket => ticket.Type == 0 && (ticket.Single == null || ticket.Single.Data == -1)))
             {
                 return BadRequest("If Type is 0, then Single.data should not be -1.");
             }
@@ -119,7 +119,7 @@ namespace CourseWork.Server.Controllers
             }
 
             if (test.Tickets.Any(ticket => (ticket.Type == 0 || ticket.Type == 1) &&
-                                 (ticket.Variants == null || ticket.Variants.Count >= 1)))
+                                 (ticket.Variants == null || ticket.Variants.Count < 1)))
             {
                 return BadRequest("If Type is 0 or 1, then Variant should not be empty and should have length greater than 1.");
             }
