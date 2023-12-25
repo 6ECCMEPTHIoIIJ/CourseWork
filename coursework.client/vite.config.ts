@@ -49,6 +49,10 @@ export default defineConfig({
             '^/weatherforecast': {
                 target: 'https://localhost:7269/',
                 secure: false
+            },
+            '^/api/tets': {
+                target: 'https://localhost:7269/',
+                secure: false
             }
         },
         port: 5173,
