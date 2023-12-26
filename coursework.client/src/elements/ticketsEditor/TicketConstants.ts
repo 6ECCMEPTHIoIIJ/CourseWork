@@ -2,6 +2,7 @@ import ITicket from "./ITicket";
 
 export function EmptyTicket(): ITicket {
     return {
+        id: "",
         type: -1,
         data: {
             question: "",

@@ -12,6 +12,7 @@ import { AddOutlined, DeleteOutlined, EditOutlined } from "@mui/icons-material";
 import createTrigger from "react-use-trigger";
 import useTriggerEffect from "react-use-trigger/useTriggerEffect";
 import { convertTestToFetchedTest } from "./TestEditor";
+import { UUID } from "crypto";
 
 interface TicketPreviewData {
     url: string;
@@ -84,14 +85,14 @@ type ErrContextParams = [boolean, React.Dispatch<boolean>, string, React.Dispatc
 
 const ErrContext = React.createContext<ErrContextParams>({} as ErrContextParams);
 
-type SucContextParams = [boolean, React.Dispatch<boolean>];
+type SucContextParams = [boolean, React.Dispatch<boolean>, UUID, React.Dispatch<UUID>];
 
 const SucContext = React.createContext<SucContextParams>({} as SucContextParams);
 
 function SaveTestDialog() {
     const [tickets, setTickets, , setTicketIdx] = React.useContext(TicketEditorContext);
     const [, setErr, , setErrorMsg] = React.useContext(ErrContext);
-    const [, setSuc] = React.useContext(SucContext);
+    const [, setSuc,, setSucMsg] = React.useContext(SucContext);
     const [open, setOpen] = React.useContext(SaveTestContext);
 
 
@@ -138,6 +139,7 @@ function SaveTestDialog() {
                                 setTicketIdx(-1);
                                 localStorage.removeItem("tickets");
                                 localStorage.removeItem("ticketIdx");
+                                r.json().then(d => setSucMsg(d.id));
                                 setSuc(true);
                             }
                             else {
@@ -341,6 +343,7 @@ function TicketEditor(): ReactNode {
     const [err, setErr] = React.useState<boolean>(false);
     const [suc, setSuc] = React.useState<boolean>(false);
     const [errorMsg, setErrorMsg] = React.useState<string>("");
+    const [tickedID, setTicketId] = React.useState<UUID>();
 
 
     const [tickets, setTickets] = React.useState<ITicket[]>((): ITicket[] => {
@@ -376,7 +379,7 @@ function TicketEditor(): ReactNode {
     return (
         <TicketEditorContext.Provider value={[tickets, setTickets, currentTicketIdx, setCurrentTicketIdx]}>
             <ErrContext.Provider value={[err, setErr, errorMsg, setErrorMsg]}>
-                <SucContext.Provider value={[suc, setSuc]}>
+                <SucContext.Provider value={[suc, setSuc, tickedID, setTicketId]}>
                     {currentTicketIdx === -1 && <TicketsPreviewList ref={lastTicketPreviewRef} />}
                     {currentTicketIdx !== -1 && <EditableTicket />}
                     <Snackbar
@@ -409,7 +412,7 @@ function TicketEditor(): ReactNode {
                                 setSuc(false);
                             }}>
                             <AlertTitle>Отправлено</AlertTitle>
-                            <Typography>Тест успешно добавлен в банк тестов</Typography>
+                            <Typography>Тест успешно добавлен в банк тестов {tickedID}</Typography>
                         </Alert>
                     </Snackbar>
                 </SucContext.Provider>

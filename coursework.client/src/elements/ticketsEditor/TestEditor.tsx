@@ -41,12 +41,14 @@ export interface IFetchedTeacher {
 }
 
 export interface IFetchedTest {
+    id: UUID;
     name: string;
     tickets: IFetchedTicket[];
     teacher: IFetchedTeacher;
 }
 
 export interface IFetchedTicket {
+    id: UUID;
     type: number;
     question: string;
     description: string;
