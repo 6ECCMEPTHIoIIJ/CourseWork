@@ -28,6 +28,12 @@ namespace CourseWork.Server.Controllers
             return await _context.Tests.ToListAsync();
         }
 
+        //[HttpGet]
+        //public async Task<ActionResult<IEnumerable<Test>>> GetPassedTest()
+        //{
+        //    return await _context.Students.To
+        //}
+
         // GET: api/Tests/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Test>> GetTest(Guid id)
