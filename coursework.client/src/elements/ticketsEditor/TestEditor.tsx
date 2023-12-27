@@ -77,7 +77,7 @@ export function convertTestToFetchedTest(test: ITest) {
                 description: ticket.data.description,
                 cost: ticket.data.cost,
                 single: ticket.type === 0 ? { data: ticket.answer.single } : undefined,
-                multiples: ticket.type === 1 ? ticket.answer.multiple.map(multiple => {
+                multiples: ticket.type === 1 ? ticket.answer.multiple.map((multiple) => {
                     return {
                         data: multiple
                     };

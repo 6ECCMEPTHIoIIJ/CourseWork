@@ -1,10 +1,4 @@
-﻿using System.Globalization;
-using System.IO;
-using System.Text;
-using CsvHelper;
-using CsvHelper.Configuration;
-using CsvHelper.Configuration.Attributes;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Text;
 
 namespace CourseWork.Server
 {
@@ -22,22 +16,21 @@ namespace CourseWork.Server
         {
             var data = _сontext.Set<T>().ToList();
 
-            using (var writer = new StreamWriter(filePath,false, Encoding.UTF8))
-            {
-                // Записываем заголовки
-                var headers = string.Join(_columnSeparator, typeof(T).GetProperties().Select(p => p.Name));
-                writer.WriteLine(headers);
+            using var writer = new StreamWriter(filePath, false, Encoding.UTF8);
+            
+            // Записываем заголовки
+            var headers = string.Join(_columnSeparator, typeof(T).GetProperties().Select(p => p.Name));
+            writer.WriteLine(headers);
 
-                // Записываем данные
-                foreach (var item in data)
-                {
-                    var values = string.Join(_columnSeparator, typeof(T).GetProperties().Select(p => FormatCsvCell(p.GetValue(item))));
-                    writer.WriteLine(values);
-                }
+            // Записываем данные
+            foreach (var item in data)
+            {
+                var values = string.Join(_columnSeparator, typeof(T).GetProperties().Select(p => FormatCsvCell(p.GetValue(item))));
+                writer.WriteLine(values);
             }
         }
 
-        private string FormatCsvCell(object value)
+        private string FormatCsvCell(object? value)
         {
             // Если значение содержит разделитель, обернем его в кавычки
             var stringValue = value?.ToString() ?? "";
@@ -49,31 +42,25 @@ namespace CourseWork.Server
             return stringValue;
         }
 
-        public void ExportStudents()
+        public void ExportStudents(string filePath)
         {
-            // Путь для сохранения CSV файла
-            string csvFilePath = "G:\\VS repos\\CourseWork\\CourseWork.Server\\ExportCSV\\Students.csv";
-
-                try
-                {
-                    ExportToCsv<Student>(csvFilePath);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error exporting data to CSV: {ex.Message}");
-                }
+            try
+            {
+                ExportToCsv<Student>(filePath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error exporting data to CSV: {ex.Message}");
+            }
 
             Console.WriteLine("Data exported to CSV file successfully.");
         }
 
-        public void ExportTeachers()
+        public void ExportTeachers(string filePath)
         {
-            // Путь для сохранения CSV файла
-            string csvFilePath = "G:\\VS repos\\CourseWork\\CourseWork.Server\\ExportCSV\\Teachers.csv";
-
             try
             {
-                ExportToCsv<Student>(csvFilePath);
+                ExportToCsv<Student>(filePath);
             }
             catch (Exception ex)
             {

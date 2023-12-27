@@ -55,30 +55,30 @@ namespace CourseWork.Server
             app.MapControllers();
 
             app.MapFallbackToFile("/index.html");
-            ExportDataToCsv(app);
+            //ExportDataToCsv(app);
 
             app.Run();
         }
 
-        private static void ExportDataToCsv(WebApplication app)
-        {
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                try
-                {
-                    var dbContext = services.GetRequiredService<DefaultDbContext>();
-                    var csvExporter = new CsvExporter(dbContext);
+        //private static void ExportDataToCsv(WebApplication app)
+        //{
+        //    using (var scope = app.Services.CreateScope())
+        //    {
+        //        var services = scope.ServiceProvider;
+        //        try
+        //        {
+        //            var dbContext = services.GetRequiredService<DefaultDbContext>();
+        //            var csvExporter = new CsvExporter(dbContext);
 
-                    csvExporter.ExportStudents();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error exporting data to CSV: {ex.Message}");
-                }
-            }
+        //            csvExporter.ExportStudents();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Console.WriteLine($"Error exporting data to CSV: {ex.Message}");
+        //        }
+        //    }
 
-            Console.WriteLine("Data exported to CSV file successfully.");
-        }
+        //    Console.WriteLine("Data exported to CSV file successfully.");
+        //}
     }
 }
