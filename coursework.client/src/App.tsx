@@ -5,8 +5,8 @@ import TicketEditor from './elements/ticketsEditor/TicketEditor';
 
 function App() {
     return (
-        //<Test idx="564a3bc0-bf19-4ca0-bf72-4535d3e20ff5" />
-        <TicketEditor />
+        <Test idx="d31e87f7-eba0-4b2e-bfab-4688cdbb4573" />
+        //<TicketEditor />
     )
 }
 

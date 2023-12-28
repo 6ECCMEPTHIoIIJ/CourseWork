@@ -38,8 +38,10 @@ namespace CourseWork.Server.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Test>> GetTest(Guid id)
         {
-            var tests = await _context.Tests.Include(t => t.Tickets).ThenInclude(t => t.Variants).ToListAsync();
-            var test = tests.Find(t => t.Id == id);
+            var test = await _context.Tests
+                .Include(t => t.Tickets)
+                .ThenInclude(t => t.Variants)
+                .SingleOrDefaultAsync(t => t.Id == id);
 
             if (test == null)
             {

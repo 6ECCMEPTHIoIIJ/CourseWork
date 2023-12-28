@@ -18,6 +18,7 @@ interface TicketPreviewData {
 }
 
 export interface ITest {
+    id: UUID;
     name: string;
     tickets: ITicket[];
 }
