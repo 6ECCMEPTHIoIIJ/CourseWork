@@ -42,6 +42,7 @@
   <ItemGroup>
     <Folder Include="libs\classes\" />
     <Folder Include="ExportCSV\" />
+    <Folder Include="ExportXML\" />
   </ItemGroup>
 
 </Project>
