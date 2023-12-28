@@ -1,5 +1,5 @@
-﻿user: 'postgres'
-host: 'localhost'
+﻿user: 'gen_user'
+host: '185.154.195.121'
 database: 'default_db'
-password: 'Pg_2023_Admin'
+password: 'o*=1/.CX$J8ew/'
 port: 5432
