@@ -81,6 +81,10 @@ export default defineConfig({
             '^/api/Export': {
                 target: 'https://localhost:7269/',
                 secure: false
+            },
+            '^/api/JwtToken': {
+                target: 'https://localhost:7269/',
+                secure: false
             }
         },
         port: 5173,

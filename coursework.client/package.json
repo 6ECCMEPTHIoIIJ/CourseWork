@@ -18,7 +18,9 @@
     "@mui/material": "5.15.1",
     "@mui/icons-material": "5.15.1",
     "@emotion/react": "11.11.3",
-    "@emotion/styled": "11.11.0"
+    "@emotion/styled": "11.11.0",
+    "react-auth-kit": "2.12.7",
+    "react-router-dom": "6.21.1"
   },
   "devDependencies": {
     "@types/node": "^20.10.4",
