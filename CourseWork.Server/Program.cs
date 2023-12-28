@@ -55,7 +55,7 @@ namespace CourseWork.Server
             app.MapControllers();
 
             app.MapFallbackToFile("/index.html");
-            ExportDataToXML(app);
+            damp(app);
 
             app.Run();
         }
@@ -71,6 +71,27 @@ namespace CourseWork.Server
                     var xmlExporter = new XmlExporter(dbContext);
 
                     xmlExporter.ExportAll("G:\\VS repos\\CourseWork\\CourseWork.Server\\ExportXML");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error exporting data to CSV: {ex.Message}");
+                }
+            }
+
+            Console.WriteLine("Data exported to CSV file successfully.");
+        }
+
+        private static void damp(WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var dbContext = services.GetRequiredService<DefaultDbContext>();
+                    var backup = new PostgresBackup();
+
+                    backup.CreateBackup("G:\\VS repos\\CourseWork\\CourseWork.Server\\ExportXML\\dump.sql");
                 }
                 catch (Exception ex)
                 {
