@@ -68,7 +68,7 @@ namespace CourseWork.Server
                 try
                 {
                     var dbContext = services.GetRequiredService<DefaultDbContext>();
-                    var xmlExporter = new CsvExporter(dbContext);
+                    var xmlExporter = new XmlExporter(dbContext);
 
                     xmlExporter.ExportAll("G:\\VS repos\\CourseWork\\CourseWork.Server\\ExportXML");
                 }
