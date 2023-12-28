@@ -66,6 +66,10 @@ export default defineConfig({
                 target: 'https://localhost:7269/',
                 secure: false
             },
+            '^/api/PassedTickets': {
+                target: 'https://localhost:7269/',
+                secure: false
+            },
             '^/api/Students': {
                 target: 'https://localhost:7269/',
                 secure: false

@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CourseWork.Server;
 
 namespace CourseWork.Server.Controllers
 {
-    public class PassedTicketsController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PassedTicketsController : ControllerBase
     {
         private readonly DefaultDbContext _context;
 
@@ -18,148 +20,104 @@ namespace CourseWork.Server.Controllers
             _context = context;
         }
 
-        // GET: PassedTickets
-        public async Task<IActionResult> Index()
+        // GET: api/PassedTickets
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<PassedTicket>>> GetPassedTickets()
         {
-            var defaultDbContext = _context.PassedTickets.Include(p => p.Student).Include(p => p.Ticked);
-            return View(await defaultDbContext.ToListAsync());
+            return await _context.PassedTickets
+                .Include(p =>p.PassedInput)
+                .Include(p =>p.PassedSingle)
+                .Include(p =>p.PassedMultiples)
+                .Include(p => p.Student)
+                .Include(p => p.Ticked)
+                .ToListAsync();
         }
 
-        // GET: PassedTickets/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        // GET: api/PassedTickets/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PassedTicket>> GetPassedTicket(Guid id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var passedTicket = await _context.PassedTickets
+                .Include(p => p.PassedInput)
+                .Include(p => p.PassedSingle)
+                .Include(p => p.PassedMultiples)
                 .Include(p => p.Student)
                 .Include(p => p.Ticked)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (passedTicket == null)
             {
                 return NotFound();
             }
 
-            return View(passedTicket);
+            return passedTicket;
         }
 
-        // GET: PassedTickets/Create
-        public IActionResult Create()
-        {
-            ViewData["StudentId"] = new SelectList(_context.Students, "PassbookNumber", "PassbookNumber");
-            ViewData["TickedId"] = new SelectList(_context.Tickets, "Id", "Id");
-            return View();
-        }
-
-        // POST: PassedTickets/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,TickedId,StudentId")] PassedTicket passedTicket)
-        {
-            if (ModelState.IsValid)
-            {
-                passedTicket.Id = Guid.NewGuid();
-                _context.Add(passedTicket);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["StudentId"] = new SelectList(_context.Students, "PassbookNumber", "PassbookNumber", passedTicket.StudentId);
-            ViewData["TickedId"] = new SelectList(_context.Tickets, "Id", "Id", passedTicket.TickedId);
-            return View(passedTicket);
-        }
-
-        // GET: PassedTickets/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var passedTicket = await _context.PassedTickets.FindAsync(id);
-            if (passedTicket == null)
-            {
-                return NotFound();
-            }
-            ViewData["StudentId"] = new SelectList(_context.Students, "PassbookNumber", "PassbookNumber", passedTicket.StudentId);
-            ViewData["TickedId"] = new SelectList(_context.Tickets, "Id", "Id", passedTicket.TickedId);
-            return View(passedTicket);
-        }
-
-        // POST: PassedTickets/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,TickedId,StudentId")] PassedTicket passedTicket)
+        // PUT: api/PassedTickets/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutPassedTicket(Guid id, PassedTicket passedTicket)
         {
             if (id != passedTicket.Id)
             {
-                return NotFound();
+                return BadRequest();
             }
 
-            if (ModelState.IsValid)
+            _context.Entry(passedTicket).State = EntityState.Modified;
+
+            try
             {
-                try
-                {
-                    _context.Update(passedTicket);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!PassedTicketExists(passedTicket.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                await _context.SaveChangesAsync();
             }
-            ViewData["StudentId"] = new SelectList(_context.Students, "PassbookNumber", "PassbookNumber", passedTicket.StudentId);
-            ViewData["TickedId"] = new SelectList(_context.Tickets, "Id", "Id", passedTicket.TickedId);
-            return View(passedTicket);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!PassedTicketExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
-        // GET: PassedTickets/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        // POST: api/PassedTickets
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<PassedTicket>> PostPassedTicket(PassedTicket passedTicket)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            _context.PassedTickets.Add(passedTicket);
+            await _context.SaveChangesAsync();
 
-            var passedTicket = await _context.PassedTickets
-                .Include(p => p.Student)
-                .Include(p => p.Ticked)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            return CreatedAtAction("GetPassedTicket", new { id = passedTicket.Id }, passedTicket);
+        }
+
+        [HttpPost("Many")]
+        public async Task<ActionResult<PassedTicket>> PostPassedTickets(ICollection<PassedTicket> passedTickets)
+        {
+            _context.PassedTickets.AddRange(passedTickets);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetPassedTickets", passedTickets);
+        }
+
+        // DELETE: api/PassedTickets/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePassedTicket(Guid id)
+        {
+            var passedTicket = await _context.PassedTickets.FindAsync(id);
             if (passedTicket == null)
             {
                 return NotFound();
             }
 
-            return View(passedTicket);
-        }
-
-        // POST: PassedTickets/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            var passedTicket = await _context.PassedTickets.FindAsync(id);
-            if (passedTicket != null)
-            {
-                _context.PassedTickets.Remove(passedTicket);
-            }
-
+            _context.PassedTickets.Remove(passedTicket);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return NoContent();
         }
 
         private bool PassedTicketExists(Guid id)

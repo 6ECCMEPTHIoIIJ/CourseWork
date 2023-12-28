@@ -2,13 +2,21 @@ import React from "react";
 
 import { ITicket } from "./ITicket";
 import { IFetchedTest, ITest } from "../ticketsEditor/TestEditor";
-import { AppBar, Box, Button, Card, CardContent, CardHeader, CardMedia, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemIcon, Radio, TextField, Toolbar, Typography } from "@mui/material";
+import { Alert, AlertTitle, AppBar, Box, Button, Card, CardContent, CardHeader, CardMedia, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemIcon, Radio, Snackbar, TextField, Toolbar, Typography } from "@mui/material";
 import { TicketPreviewDatas } from "../ticketsEditor/TicketEditor";
 import { UUID } from "crypto";
 
-type EditableTicketContextProps = [ITicket, React.Dispatch<ITicket>];
+type EditableTicketContextProps = [ITest, React.Dispatch<ITest>];
 
 const EditableTicketContext = React.createContext<EditableTicketContextProps>({} as EditableTicketContextProps);
+
+type ErrContextParams = [boolean, React.Dispatch<boolean>];
+
+const ErrContext = React.createContext<ErrContextParams>({} as ErrContextParams);
+
+type SucContextParams = [boolean, React.Dispatch<boolean>];
+
+const SucContext = React.createContext<SucContextParams>({} as SucContextParams);
 
 function EditableTicketAnswerInput(params: { idx: number }) {
     const [test, setTest] = React.useContext(EditableTicketContext);
@@ -119,6 +127,9 @@ function SaveTestDialog() {
     const [open, setOpen, idx] = React.useContext(DiscardTestContext);
     const [test, setTest] = React.useContext(EditableTicketContext);
 
+    const [, setErr] = React.useContext(ErrContext);
+    const [, setSuc] = React.useContext(SucContext);
+
     return (
         <Dialog
             open={open}
@@ -136,29 +147,39 @@ function SaveTestDialog() {
                 <Button
                     color="error"
                     onClick={() => {
-                        setTest(undefined);
-                        localStorage.removeItem("test");
+
                         setOpen(false);
-                        fetch('api/PassedTickets', {
+                        fetch('api/PassedTickets/Many', {
                             method: "POST",
                             headers: {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify(test.tickets.map(ticket => {
+                            body: JSON.stringify(test.tickets.map((ticket) => {
                                 return {
                                     ticketId: ticket.id,
-                                    input: {
+                                    passedInput: {
                                         data: ticket.answer.input
                                     },
-                                    single: {
+                                    passedSingle: {
                                         data: ticket.answer.single
                                     },
-                                    multiples: [
-                                        ticket.answer.multiple.map(m => { return {data: m} })
-                                    ]
+                                    passedMultiples:
+                                        ticket.answer.multiple.map(m => { return { data: m } }) || []
+
                                 }
-                            }))
+                            }) || [])
+                        }).then(r => {
+                            if (r.ok) {
+                                setTest(undefined);
+                                localStorage.removeItem("test");
+                                //r.json().then(d => setSucMsg(d.id));
+                                setSuc(true);
+                            }
+                            else {
+                                //r.json().then(d => setErrorMsg(d));
+                                setErr(true);
+                            }
                         })
                     }}
                 >Да</Button>
@@ -172,6 +193,9 @@ function SaveTestDialog() {
 }
 
 export function Test(params: { idx: UUID }) {
+    const [err, setErr] = React.useState<boolean>(false);
+    const [suc, setSuc] = React.useState<boolean>(false);
+
     const [test, setTest] = React.useState<ITest>((): ITest => {
         const saved = localStorage.getItem("test");
         const initial = saved ? JSON.parse(saved) : undefined
@@ -194,63 +218,101 @@ export function Test(params: { idx: UUID }) {
 
     return (
         <React.Fragment>
+
             {test !== undefined && <EditableTicketContext.Provider value={[test, setTest]}>
-                <DiscardTestContext.Provider value={[open, setOpen, params.idx]}>
-                    <AppBar component="nav" color="default" variant="outlined" elevation={0}>
-                        <Toolbar>
-                            {test.tickets.length != 0 && <Button
-                                color="primary"
-                                onClick={() => {
-                                    setOpen(true);
+                <ErrContext.Provider value={[err, setErr]}>
+                    <SucContext.Provider value={[suc, setSuc]}>
+                        <DiscardTestContext.Provider value={[open, setOpen, params.idx]}>
+                            <AppBar component="nav" color="default" variant="outlined" elevation={0}>
+                                <Toolbar>
+                                    {test.tickets.length != 0 && <Button
+                                        color="primary"
+                                        onClick={() => {
+                                            setOpen(true);
+                                        }}>
+                                        <Typography >
+                                            ЗАКОНЧИТЬ ТЕСТ
+                                        </Typography>
+                                    </Button>}
+                                    <SaveTestDialog />
+                                </Toolbar>
+                            </AppBar>
+                        </DiscardTestContext.Provider>
+                        <Toolbar />
+                        {test.tickets.map((ticket, i) => {
+                            return (
+                                <Card key={i} sx={{ marginBottom: "3em" }}>
+                                    <CardMedia
+                                        sx={{ overflow: "clip" }}
+                                        component="img"
+                                        height="149px"
+                                        image={TicketPreviewDatas[ticket.type + 1].url}
+                                    />
+                                    <CardHeader
+                                        title={"Билет №" + (i + 1)}
+                                        subheader={TicketPreviewDatas[ticket.type + 1].name}
+                                    />
+                                    <CardContent>
+                                        <Box sx={{ width: "100%", padding: "2em" }}>
+                                            <Typography textAlign="justify" sx={{ marginBottom: "2em" }} gutterBottom>
+                                                Стоимость: {ticket.data.cost}
+                                            </Typography>
+                                            <Typography textAlign="justify" sx={{ marginTop: "2em", fontWeight: 'normal' }} gutterBottom>
+                                                Вопрос: {ticket.data.question}
+                                            </Typography>
+                                            {ticket.data.description !== "" &&
+                                                <Typography textAlign="justify" gutterBottom sx={{ marginTop: "2em", fontWeight: 'light', fontStyle: "italic" }}>
+                                                    Пояснение: {ticket.data.description}
+                                                </Typography>}
+                                        </Box>
+                                        <Divider variant="middle" />
+                                        <Box sx={{ width: "100%", padding: "2em" }}>
+                                            {ticket.type === 0 && <EditableTicketAnswerChoise idx={i} multiple={false} />}
+                                            {ticket.type === 1 && <EditableTicketAnswerChoise idx={i} multiple={true} />}
+                                            {ticket.type === 2 && <EditableTicketAnswerInput idx={i} />}
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            )
+                        })}
+
+                        <Snackbar
+                            open={err}
+                            onClose={() => {
+                                setErr(false)
+                            }}
+                        >
+                            <Alert
+                                sx={{ width: '100%' }}
+                                severity="error"
+                                onClose={() => {
+                                    setErr(false)
                                 }}>
-                                <Typography >
-                                    ЗАКОНЧИТЬ ТЕСТ
-                                </Typography>
-                            </Button>}
-                                <SaveTestDialog />
-                        </Toolbar>
-                    </AppBar>
-                </DiscardTestContext.Provider>
-                <Toolbar />
-                {test.tickets.map((ticket, i) => {
-                    return (
-                        <Card key={i} sx={{ marginBottom: "3em" }}>
-                            <CardMedia
-                                sx={{ overflow: "clip" }}
-                                component="img"
-                                height="149px"
-                                image={TicketPreviewDatas[ticket.type + 1].url}
-                            />
-                            <CardHeader
-                                title={"Билет №" + (i + 1)}
-                                subheader={TicketPreviewDatas[ticket.type + 1].name}
-                            />
-                            <CardContent>
-                                <Box sx={{ width: "100%", padding: "2em" }}>
-                                    <Typography textAlign="justify" sx={{ marginBottom: "2em" }} gutterBottom>
-                                        Стоимость: {ticket.data.cost}
-                                    </Typography>
-                                    <Typography textAlign="justify" sx={{ marginTop: "2em", fontWeight: 'normal' }} gutterBottom>
-                                        Вопрос: {ticket.data.question}
-                                    </Typography>
-                                    {ticket.data.description !== "" &&
-                                        <Typography textAlign="justify" gutterBottom sx={{ marginTop: "2em", fontWeight: 'light', fontStyle: "italic" }}>
-                                            Пояснение: {ticket.data.description}
-                                        </Typography>}
-                                </Box>
-                                <Divider variant="middle" />
-                                <Box sx={{ width: "100%", padding: "2em" }}>
-                                    {ticket.type === 0 && <EditableTicketAnswerChoise idx={i} multiple={false} />}
-                                    {ticket.type === 1 && <EditableTicketAnswerChoise idx={i} multiple={true} />}
-                                    {ticket.type === 2 && <EditableTicketAnswerInput idx={i} />}
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    )
-                })}
+                                <AlertTitle>Ошибка</AlertTitle>
+                            </Alert>
+
+                        </Snackbar>
+                        <Snackbar
+                            open={suc}
+                            onClose={() => {
+                                setSuc(false)
+                            }}
+                        >
+                            <Alert
+                                sx={{ width: '100%' }}
+                                severity="success"
+                                onClose={() => {
+                                    setSuc(false);
+                                }}>
+                                <AlertTitle>Отправлено</AlertTitle>
+                                <Typography>Ваши результаты засчитаны</Typography>
+                            </Alert>
+                        </Snackbar>
+                    </SucContext.Provider>
+                </ErrContext.Provider>
             </EditableTicketContext.Provider>}
             {test === undefined && <CircularProgress />}
-        </React.Fragment>
+        </React.Fragment >
     )
 }
 
