@@ -17,25 +17,39 @@ namespace CourseWork.Server
             _context = context;
         }
 
-        public void ExportToXml<T>(string xmlFilePath) where T : class
+        public void ExportToXml<T>(string filePath) where T : class
         {
-            var data = _context.Set<T>().ToList();
-
             try
             {
-                using (var writer = new StreamWriter(xmlFilePath, false, Encoding.UTF8))
+                var data = _context.Set<T>().ToList();
+
+                var xmlDocument = new XDocument(
+                    new XElement(typeof(T).Name + "s",
+                        data.Select(item =>
+                            new XElement(typeof(T).Name,
+                                item.GetType().GetProperties().Select(property =>
+                                    new XElement(property.Name, property.GetValue(item))
+                                )
+                            )
+                        )
+                    )
+                );
+
+                using (var writer = new StreamWriter(filePath))
                 {
-                    var serializer = new XmlSerializer(typeof(List<T>));
-                    serializer.Serialize(writer, data);
+                    xmlDocument.Save(writer);
                 }
 
-                Console.WriteLine($"Data exported to XML file ({typeof(T).Name}.xml) successfully.");
+
             }
-            catch (Exception ex)
+            catch (Exception ex) 
             {
-                Console.WriteLine($"Error exporting data to XML ({typeof(T).Name}.xml): {ex.Message}");
+                Console.WriteLine($"Error exporting data to CSV: {ex.Message}");
             }
+            
+            Console.WriteLine("Data exported to CSV file successfully.");
         }
+
 
         public void ExportSingles(string xmlFilePath)
         {
@@ -110,8 +124,8 @@ namespace CourseWork.Server
                 ExportPassedTickets(Path.Combine(directoryPath, "PassedTickets.xml"));
                 ExportTests(Path.Combine(directoryPath, "Tests.xml"));
                 ExportTickets(Path.Combine(directoryPath, "Tickets.xml"));
-                ExportStudents(Path.Combine(directoryPath, "Teachers.xml"));
-                ExportTeatchers(Path.Combine(directoryPath, "Students.xml"));
+                ExportStudents(Path.Combine(directoryPath, "Students.xml"));
+                ExportTeathers(Path.Combine(directoryPath, "Teachers.xml"));
             }
             catch (Exception ex)
             {
