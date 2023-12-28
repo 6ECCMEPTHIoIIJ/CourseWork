@@ -1,10 +1,3 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Identity.Abstractions;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.Resource;
-using Microsoft.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
 using System.Text.Json.Serialization;
 
 
@@ -15,13 +8,6 @@ namespace CourseWork.Server
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-            //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            //    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
-
-
-
 
             builder.Services.AddControllers()
             .AddJsonOptions(options =>
@@ -62,23 +48,12 @@ namespace CourseWork.Server
 
         private static void ExportDataToXML(WebApplication app)
         {
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                try
-                {
-                    var dbContext = services.GetRequiredService<DefaultDbContext>();
-                    var xmlExporter = new CsvExporter(dbContext);
+            using var scope = app.Services.CreateScope();
+            var services = scope.ServiceProvider;
+            var dbContext = services.GetRequiredService<DefaultDbContext>();
+            var xmlExporter = new XmlExporter(dbContext);
 
-                    xmlExporter.ExportAll("G:\\VS repos\\CourseWork\\CourseWork.Server\\ExportXML");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error exporting data to CSV: {ex.Message}");
-                }
-            }
-
-            Console.WriteLine("Data exported to CSV file successfully.");
+            xmlExporter.ExportAll("Data");
         }
     }
 }

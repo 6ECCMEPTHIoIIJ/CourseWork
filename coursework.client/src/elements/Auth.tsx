@@ -78,7 +78,7 @@ export function Auth() {
                                 setAl(true);
                                 str += "Поле пароля не может быть пустым; ";
                             } else {
-                                fetch("api/JwtToken", {
+                                fetch("api/JwtToken/" + type ? "Teacher" : "Student", {
                                     method: "POST",
                                     headers: {
                                         'Accept': 'application/json',
@@ -90,29 +90,43 @@ export function Auth() {
                                     if (r.ok) {
                                         r.json().then(d => {
                                             setL("");
-                                            if (sign({
+                                            if (type) {
+                                                if (sign({
+                                                    token: d.token.token,
+                                                    tokenType: "Bearer",
+                                                    expiresIn: d.token.lifetime,
+                                                    authState: {
+                                                        id: d.teacher.id,
+                                                        firstname: d.teacher.firstname,
+                                                        lastname: d.teacher.lastname,
+                                                        patronymic: d.teacher.patronymic
+                                                    }
+                                                }))
+                                                    navigate("/teacher");
+                                            }
+                                            else if (sign({
                                                 token: d.token.token,
                                                 tokenType: "Bearer",
                                                 expiresIn: d.token.lifetime,
                                                 authState: {
-                                                    id: d.teacher.id,
+                                                    passbookNumber: d.teacher.passbookNumber,
                                                     firstname: d.teacher.firstname,
                                                     lastname: d.teacher.lastname,
                                                     patronymic: d.teacher.patronymic
                                                 }
                                             }))
-                                                navigate(type ? "/teacher" : "/student");
+                                                navigate("/student");
                                         });
                                     } else {
                                         r.json().then(d => setEm(d));
                                         setErr(true)
                                     }
                                 });
-                                
+
                             }
                             setM(str);
                             setP("");
-                        }}>{"ВОЙТИ"+ (type === true && " КАК ПРЕПОДАВАТЕЛЬ" || type === false && " КАК СТУДЕНТ" || "")}</Button>}
+                        }}>{"ВОЙТИ" + (type === true && " КАК ПРЕПОДАВАТЕЛЬ" || type === false && " КАК СТУДЕНТ" || "")}</Button>}
                     </CardActions>
                 </Card>
             </Container>

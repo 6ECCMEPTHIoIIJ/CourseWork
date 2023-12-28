@@ -5,6 +5,9 @@ import { IFetchedTest, ITest } from "../ticketsEditor/TestEditor";
 import { Alert, AlertTitle, AppBar, Box, Button, Card, CardContent, CardHeader, CardMedia, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemIcon, Radio, Snackbar, TextField, Toolbar, Typography } from "@mui/material";
 import { TicketPreviewDatas } from "../ticketsEditor/TicketEditor";
 import { UUID } from "crypto";
+import { TypeContext } from "../../App";
+import { useSignOut } from "react-auth-kit";
+import { useNavigate } from "react-router-dom";
 
 type EditableTicketContextProps = [ITest, React.Dispatch<ITest>];
 
@@ -215,6 +218,17 @@ export function Test(params: { idx: UUID }) {
     React.useEffect(() => {
         localStorage.setItem("test", JSON.stringify(test));
     }, [test]);
+
+    const [type, setType] = React.useContext(TypeContext);
+    const navigate = useNavigate();
+    const s = useSignOut();
+
+    React.useEffect(() => {
+        if (type !== false) {
+            s();
+            navigate("/auth");
+        }
+    }, []);
 
     return (
         <React.Fragment>

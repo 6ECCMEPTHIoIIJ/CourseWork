@@ -13,6 +13,9 @@ import createTrigger from "react-use-trigger";
 import useTriggerEffect from "react-use-trigger/useTriggerEffect";
 import { convertTestToFetchedTest } from "./TestEditor";
 import { UUID } from "crypto";
+import { useNavigate } from "react-router-dom";
+import { TypeContext } from "../../App";
+import { useSignOut } from "react-auth-kit";
 
 interface TicketPreviewData {
     url: string;
@@ -92,7 +95,7 @@ const SucContext = React.createContext<SucContextParams>({} as SucContextParams)
 function SaveTestDialog() {
     const [tickets, setTickets, , setTicketIdx] = React.useContext(TicketEditorContext);
     const [, setErr, , setErrorMsg] = React.useContext(ErrContext);
-    const [, setSuc,, setSucMsg] = React.useContext(SucContext);
+    const [, setSuc, , setSucMsg] = React.useContext(SucContext);
     const [open, setOpen] = React.useContext(SaveTestContext);
 
 
@@ -340,6 +343,17 @@ export const TicketEditorContext = React.createContext<TicketEditorContextProps>
 const scrollToBottomTrigger = createTrigger();
 
 function TicketEditor(): ReactNode {
+    const [type, setType] = React.useContext(TypeContext);
+    const navigate = useNavigate();
+    const s = useSignOut();
+
+    React.useEffect(() => {
+        if (type !== true) {
+            s();
+            navigate("/auth");
+        }
+    }, []);
+
     const [err, setErr] = React.useState<boolean>(false);
     const [suc, setSuc] = React.useState<boolean>(false);
     const [errorMsg, setErrorMsg] = React.useState<string>("");

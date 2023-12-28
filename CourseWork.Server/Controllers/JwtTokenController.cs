@@ -16,6 +16,12 @@ namespace CourseWork.Server.Controllers
             public required JwtToken Token { get; set; }
         }
 
+        public class StudentLogin
+        {
+            public required Student Student { get; set; }
+            public required JwtToken Token { get; set; }
+        }
+
         public class JwtToken
         {
             public required string Token { get; set; }
@@ -37,12 +43,12 @@ namespace CourseWork.Server.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("Teacher")]
         public async Task<ActionResult<TeacherLogin>> LoginAsTeacher(Login login)
         {
             var teacher = await _context.Teachers.SingleOrDefaultAsync(t => t.Login.Equals(login.L));
             if (teacher == null)
-                return BadRequest($"Пользователя \'{login.L}\' не существует");
+                return BadRequest($"Преподавателя \'{login.L}\' не существует");
 
             if (!teacher.Password.Equals(login.P))
                 return BadRequest($"Неверный логин или пароль");
@@ -53,6 +59,27 @@ namespace CourseWork.Server.Controllers
                 Token = new()
                 {
                     Token = JwtTokenValidator.GenerateToken(teacher.Id.ToString(), "Teacher"),
+                    Lifetime = (int)TimeSpan.FromMinutes(300).TotalSeconds
+                }
+            };
+        }
+
+        [HttpPost("Student")]
+        public async Task<ActionResult<StudentLogin>> LoginAsStudent(Login login)
+        {
+            var student = await _context.Students.SingleOrDefaultAsync(t => t.PassbookNumber.Equals(login.L));
+            if (student == null)
+                return BadRequest($"Студента \'{login.L}\' не существует");
+
+            if (!student.Password.Equals(login.P))
+                return BadRequest($"Неверный логин или пароль");
+
+            return new StudentLogin
+            {
+                Student = student,
+                Token = new()
+                {
+                    Token = JwtTokenValidator.GenerateToken(student.PassbookNumber.ToString(), "Student"),
                     Lifetime = (int)TimeSpan.FromMinutes(300).TotalSeconds
                 }
             };

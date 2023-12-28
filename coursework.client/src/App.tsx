@@ -4,14 +4,15 @@ import { Auth } from './elements/Auth';
 import { Test } from './elements/exam/Test';
 import TestEditor from './elements/ticketsEditor/TestEditor';
 import TicketEditor from './elements/ticketsEditor/TicketEditor';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import React, { Dispatch } from 'react';
 
 export const TypeContext = React.createContext<[boolean, Dispatch<boolean>]>({} as [boolean, Dispatch<boolean>]);
 
+
+
 function App() {
     const [type, setType] = React.useState<[boolean, Dispatch<boolean>]>(null)
-
 
     return (
         <AuthProvider cookieSecure={window.location.protocol == "https"} cookieDomain={window.location.hostname} authType={'cookie'} authName={'_auth'} >
@@ -31,7 +32,7 @@ function App() {
                             </TypeContext.Provider>
                         </RequireAuth>}>
                     </Route>
-                    <Route path={""} element={
+                    <Route path={"/auth"} element={
                         <TypeContext.Provider value={[type, setType]}>
                             <Auth />
                         </TypeContext.Provider>
