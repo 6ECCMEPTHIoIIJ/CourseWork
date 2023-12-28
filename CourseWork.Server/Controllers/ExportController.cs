@@ -93,7 +93,7 @@ namespace CourseWork.Server.Controllers
         [HttpPost("Xml/Teachers")]
         public void PostTeachersXml([FromBody] string pathDir)
         {
-            _xmlExporter.ExportTeatchers(Path.Combine(pathDir, "Teachers.xml"));
+            _xmlExporter.ExportTeachers(Path.Combine(pathDir, "Teachers.xml"));
         }
 
         [HttpPost("Xml/Singles")]

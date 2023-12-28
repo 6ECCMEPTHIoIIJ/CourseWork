@@ -98,7 +98,7 @@ namespace CourseWork.Server
 
 
 
-        public void ExportTeatchers(string xmlFilePath)
+        public void ExportTeachers(string xmlFilePath)
         {
             //string xmlFilePath = "G:\\VS repos\\CourseWork\\CourseWork.Server\\ExportXML\\Students.xml";
             ExportToXml<Teacher>(xmlFilePath);
@@ -125,7 +125,7 @@ namespace CourseWork.Server
                 ExportTests(Path.Combine(directoryPath, "Tests.xml"));
                 ExportTickets(Path.Combine(directoryPath, "Tickets.xml"));
                 ExportStudents(Path.Combine(directoryPath, "Students.xml"));
-                ExportTeathers(Path.Combine(directoryPath, "Teachers.xml"));
+                ExportTeachers(Path.Combine(directoryPath, "Teachers.xml"));
             }
             catch (Exception ex)
             {

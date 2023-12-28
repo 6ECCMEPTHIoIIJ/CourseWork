@@ -10,9 +10,19 @@ import React, { Dispatch } from 'react';
 export const TypeContext = React.createContext<[boolean, Dispatch<boolean>]>({} as [boolean, Dispatch<boolean>]);
 
 
+function Dummy() {
+    const navigate = useNavigate();
+
+    React.useEffect(() => {
+        navigate("/auth");
+    }, []);
+}
+
 
 function App() {
     const [type, setType] = React.useState<[boolean, Dispatch<boolean>]>(null)
+
+
 
     return (
         <AuthProvider cookieSecure={window.location.protocol == "https"} cookieDomain={window.location.hostname} authType={'cookie'} authName={'_auth'} >
@@ -36,6 +46,10 @@ function App() {
                         <TypeContext.Provider value={[type, setType]}>
                             <Auth />
                         </TypeContext.Provider>
+                    }>
+                    </Route>
+                    <Route path={""} element={
+                            <Dummy />
                     }>
                     </Route>
                 </Routes>

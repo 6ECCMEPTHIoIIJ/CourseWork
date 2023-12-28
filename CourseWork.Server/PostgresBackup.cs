@@ -8,33 +8,21 @@ namespace CourseWork.Server
 
         public PostgresBackup()
         {
-            connectionStr = DatabaseConfig.GetConnectionString();
+            connectionStr = DatabaseConfig.GetDumpString();
         }
 
-        public void CreateBackup(string outputPath)
+        public async void CreateBackup(string outputPath)
         {
             try
             {
                 //string pgDumpCommand = $"-h 185.154.195.121 -U gen_user -d default_db -Fc -f {outputPath}";
 
-                using (var db = new DefaultDbContext())
-                {
-                    // Создание бэкапа с помощью pg_dump
-                    var processInfo = new ProcessStartInfo("D:\\PostgreSQL\\15\\bin\\pg_dump.exe")
-                    {
-                        Arguments = $"-U {connectionStr} > {outputPath}",
-                        RedirectStandardOutput = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
+                using var db = new DefaultDbContext();
+                // Создание бэкапа с помощью pg_dump
+                using var process = Process.Start("pg_dump.exe", $"{connectionStr} -f dump.sql");
+                process.WaitForExit();
 
-                    using (var process = Process.Start(processInfo))
-                    {
-                        process.WaitForExit();
-                    }
-
-                    Console.WriteLine($"Backup completed. File saved to {outputPath}");
-                }
+                //Console.WriteLine($"Backup completed. File saved to {outputPath}");
             }
             catch (Exception ex)
             {
