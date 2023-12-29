@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CourseWork.Server;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CourseWork.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class TeachersController : ControllerBase
     {
         private readonly DefaultDbContext _context;
@@ -44,6 +46,7 @@ namespace CourseWork.Server.Controllers
         // PUT: api/Teachers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize("Admin")]
         public async Task<IActionResult> PutTeacher(Guid id, Teacher teacher)
         {
             if (id != teacher.Id)
@@ -75,6 +78,7 @@ namespace CourseWork.Server.Controllers
         // POST: api/Teachers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize("Admin")]
         public async Task<ActionResult<Teacher>> PostTeacher(Teacher teacher)
         {
             _context.Teachers.Add(teacher);
@@ -85,6 +89,7 @@ namespace CourseWork.Server.Controllers
 
         // DELETE: api/Teachers/5
         [HttpDelete("{id}")]
+        [Authorize("Admin")]
         public async Task<IActionResult> DeleteTeacher(Guid id)
         {
             var teacher = await _context.Teachers.FindAsync(id);

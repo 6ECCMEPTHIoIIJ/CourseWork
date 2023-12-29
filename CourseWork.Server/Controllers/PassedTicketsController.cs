@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CourseWork.Server;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CourseWork.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PassedTicketsController : ControllerBase
     {
         private readonly DefaultDbContext _context;

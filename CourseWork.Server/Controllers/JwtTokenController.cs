@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -82,6 +83,19 @@ namespace CourseWork.Server.Controllers
                     Token = JwtTokenValidator.GenerateToken(student.PassbookNumber.ToString(), "Student"),
                     Lifetime = (int)TimeSpan.FromMinutes(300).TotalSeconds
                 }
+            };
+        }
+
+        [HttpPost("Admin")]
+        public async Task<ActionResult<JwtToken>> LoginAsAdmin(Login login)
+        {
+            if (login.L != "Admin" || login.P != "Admin")
+                return BadRequest($"Неверный логин или пароль");
+
+            return new JwtToken
+            {
+                Token = JwtTokenValidator.GenerateToken("Admin", "Admin"),
+                Lifetime = (int)TimeSpan.FromMinutes(300).TotalSeconds
             };
         }
     }
