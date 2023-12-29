@@ -74,11 +74,13 @@ export function Auth() {
                             if (l === "" || l === "") {
                                 setAl(true);
                                 str += "Поле" + (type === true && " логина" || type === false && " номера зачетной книжки") + " не может быть пустым; ";
-                            } if (p === "") {
+                            }
+                            if (p === "") {
                                 setAl(true);
                                 str += "Поле пароля не может быть пустым; ";
-                            } else {
-                                fetch("api/JwtToken/" + type ? "Teacher" : "Student", {
+                            }
+                            if (l && p) {
+                                fetch("api/JwtToken/" + (type ? "Teacher" : "Student"), {
                                     method: "POST",
                                     headers: {
                                         'Accept': 'application/json',
@@ -109,10 +111,10 @@ export function Auth() {
                                                 tokenType: "Bearer",
                                                 expiresIn: d.token.lifetime,
                                                 authState: {
-                                                    passbookNumber: d.teacher.passbookNumber,
-                                                    firstname: d.teacher.firstname,
-                                                    lastname: d.teacher.lastname,
-                                                    patronymic: d.teacher.patronymic
+                                                    passbookNumber: d.student.passbookNumber,
+                                                    firstname: d.student.firstname,
+                                                    lastname: d.student.lastname,
+                                                    patronymic: d.student.patronymic
                                                 }
                                             }))
                                                 navigate("/student");

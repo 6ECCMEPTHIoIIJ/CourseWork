@@ -6,8 +6,9 @@ import { Alert, AlertTitle, AppBar, Box, Button, Card, CardContent, CardHeader, 
 import { TicketPreviewDatas } from "../ticketsEditor/TicketEditor";
 import { UUID } from "crypto";
 import { TypeContext } from "../../App";
-import { useSignOut } from "react-auth-kit";
+import { useSignOut, useAuthHeader } from "react-auth-kit";
 import { useNavigate } from "react-router-dom";
+import Cookies from 'js-cookie';
 
 type EditableTicketContextProps = [ITest, React.Dispatch<ITest>];
 
@@ -133,6 +134,8 @@ function SaveTestDialog() {
     const [, setErr] = React.useContext(ErrContext);
     const [, setSuc] = React.useContext(SucContext);
 
+    const kasdfas = useAuthHeader();
+
     return (
         <Dialog
             open={open}
@@ -156,7 +159,8 @@ function SaveTestDialog() {
                             method: "POST",
                             headers: {
                                 'Accept': 'application/json',
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
+                                'Authorization': kasdfas()
                             },
                             body: JSON.stringify(test.tickets.map((ticket) => {
                                 return {
@@ -205,9 +209,18 @@ export function Test(params: { idx: UUID }) {
         return initial as ITest;
     });
 
+    const kasdfas = useAuthHeader();
+
     React.useEffect(() => {
         if (test === undefined)
-            fetch('api/Tests/' + params.idx)
+            fetch('api/Tests/' + params.idx, {
+                method: "GET",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': kasdfas()
+                }
+            })
                 .then(r => r.json())
                 .then(d => setTest(convertFetchedTestToTest(d)));
     }, [params.idx, test]);
@@ -224,7 +237,7 @@ export function Test(params: { idx: UUID }) {
     const s = useSignOut();
 
     React.useEffect(() => {
-        if (type !== false) {
+        if (type !== false && type !== null) {
             s();
             navigate("/auth");
         }
@@ -329,4 +342,3 @@ export function Test(params: { idx: UUID }) {
         </React.Fragment >
     )
 }
-

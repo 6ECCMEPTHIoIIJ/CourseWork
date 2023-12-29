@@ -30,7 +30,7 @@ namespace CourseWork.Server
             string yaml = File.ReadAllText(_configPath);
             var config = deserializer.Deserialize<DatabaseConfig>(yaml);
             Console.WriteLine($"--dbname=postgresql://{config.user}:{config.password}@{config.host}:{config.port}/{config.database} -f E:/dump.sql");
-            return $"--dbname=postgresql://{config.user}:'{config.password}@{config.host}:{config.port}/{config.database}";
+            return $"--dbname=postgresql://{config.user}:{config.password}@{config.host}:{config.port}/{config.database}";
         }
     }
 }

@@ -15,7 +15,7 @@ import { convertTestToFetchedTest } from "./TestEditor";
 import { UUID } from "crypto";
 import { useNavigate } from "react-router-dom";
 import { TypeContext } from "../../App";
-import { useSignOut } from "react-auth-kit";
+import { useSignOut, useAuthHeader } from "react-auth-kit";
 
 interface TicketPreviewData {
     url: string;
@@ -101,7 +101,7 @@ function SaveTestDialog() {
 
     const [name, setName] = React.useState<string>("");
 
-
+    const kasdfas = useAuthHeader();
     return (
         <Dialog
             open={open}
@@ -132,8 +132,10 @@ function SaveTestDialog() {
                         fetch("api/Tests", {
                             method: "POST",
                             headers: {
+                                "access-control-allow-origin": "*", 
                                 'Accept': 'application/json',
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
+                                'Authorization': kasdfas()
                             },
                             body: JSON.stringify(convertTestToFetchedTest({ name: name, tickets: tickets }))
                         }).then(r => {
@@ -348,7 +350,7 @@ function TicketEditor(): ReactNode {
     const s = useSignOut();
 
     React.useEffect(() => {
-        if (type !== true) {
+        if (type !== true && type !== null) {
             s();
             navigate("/auth");
         }

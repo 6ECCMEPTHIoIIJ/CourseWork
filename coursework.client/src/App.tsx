@@ -16,6 +16,8 @@ function Dummy() {
     React.useEffect(() => {
         navigate("/auth");
     }, []);
+
+    return <React.Fragment/>
 }
 
 

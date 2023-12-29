@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+
 using System.Text.Json.Serialization;
 
 
@@ -8,6 +11,18 @@ namespace CourseWork.Server
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(o =>
+            {
+                var validator = new JwtTokenValidator();
+                o.UseSecurityTokenValidators = true;
+                o.SecurityTokenValidators.Add(validator);
+            });
+            builder.Services.AddAuthorization();
+            builder.Services.AddHostedService<PostgresBackup>();
+
+
 
             builder.Services.AddControllers()
             .AddJsonOptions(options =>
@@ -20,6 +35,7 @@ namespace CourseWork.Server
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
 
             var app = builder.Build();
 
@@ -35,13 +51,13 @@ namespace CourseWork.Server
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
 
             app.MapControllers();
 
             app.MapFallbackToFile("/index.html");
-            damp(app);
+            //damp(app);
 
             app.Run();
         }
@@ -56,7 +72,7 @@ namespace CourseWork.Server
             xmlExporter.ExportAll("Data");
         }
 
-        private static void damp(WebApplication app)
+        private static async void damp(WebApplication app)
         {
             using (var scope = app.Services.CreateScope())
             {
@@ -66,7 +82,7 @@ namespace CourseWork.Server
                     var dbContext = services.GetRequiredService<DefaultDbContext>();
                     var backup = new PostgresBackup();
 
-                    backup.CreateBackup("G:\\VS repos\\CourseWork\\CourseWork.Server\\ExportXML\\dump.sql");
+                    await backup.CreateBackup("G:\\VS repos\\CourseWork\\CourseWork.Server\\ExportXML\\dump.sql");
                 }
                 catch (Exception ex)
                 {

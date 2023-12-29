@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CourseWork.Server.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TestsController : ControllerBase
@@ -24,7 +25,6 @@ namespace CourseWork.Server.Controllers
 
         // GET: api/Tests
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<Test>>> GetTests()
         {
             return await _context.Tests.ToListAsync();
@@ -38,7 +38,6 @@ namespace CourseWork.Server.Controllers
 
         // GET: api/Tests/5
         [HttpGet("{id}")]
-        [Authorize]
         public async Task<ActionResult<Test>> GetTest(Guid id)
         {
             var test = await _context.Tests
@@ -57,7 +56,6 @@ namespace CourseWork.Server.Controllers
         // PUT: api/Tests/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> PutTest(Guid id, Test test)
         {
             if (id != test.Id)
@@ -89,7 +87,6 @@ namespace CourseWork.Server.Controllers
         // POST: api/Tests
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "Teacher")]
         public async Task<ActionResult<Test>> PostTest(Test test)
         {
             var errorMsgBuilder = new StringBuilder();
@@ -161,7 +158,6 @@ namespace CourseWork.Server.Controllers
 
         // DELETE: api/Tests/5
         [HttpDelete("{id}")]
-        [Authorize]
         public async Task<IActionResult> DeleteTest(Guid id)
         {
             var test = await _context.Tests.FindAsync(id);

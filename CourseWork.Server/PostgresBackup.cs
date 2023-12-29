@@ -4,12 +4,22 @@ using System.Data;
 using YandexDisk.Client.Http;
 using YandexDisk.Client;
 using YandexDisk.Client.Clients;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json.Serialization;
+
+using YandexDisk.Client;
+using YandexDisk.Client.Clients;
+using YandexDisk.Client.Http;
+using YandexDisk.Client.Protocol;
 
 namespace CourseWork.Server
 {
-    public class PostgresBackup
+    public class PostgresBackup : BackgroundService
     {
         private readonly string connectionStr;
+        private readonly string backupFile = Path.Combine($"backup_{DateTime.Now:yyyy.MM.dd.HHmmss}.sql");
 
         string accessToken = "y0_AgAAAABUzwr2AAsQFgAAAAD2PZhK3pTEhMMST_yui2-7m9PPdJXDjyM";
 
@@ -22,24 +32,90 @@ namespace CourseWork.Server
             connectionStr = DatabaseConfig.GetDumpString();
         }
 
-        public async void CreateBackup(string outputPath)
+        public async Task CreateBackup(string outputPath)
         {
             try
             {
-                DateTime dt = new DateTime();
-                string dtNow = $"{dt.Day}-{dt.Month}-{dt.Year}_{dt.Hour}:{dt.Minute}_dump.sql";
-                
 
-                using var db = new DefaultDbContext();
-                // Создание бэкапа с помощью pg_dump
-                using var process = Process.Start("pg_dump.exe", $"{connectionStr} -f {dtNow}");
-                process.WaitForExit();
+                using (var process = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "pg_dump",
+                    RedirectStandardOutput = false,
+                    UseShellExecute = true,
+                    CreateNoWindow = true,
+                    Arguments = $"{connectionStr} -f ../{backupFile}"
+                }))
+                {
+                    process.WaitForExit();
+                }
 
-                //Console.WriteLine($"Backup completed. File saved to {outputPath}");
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception during backup: {ex.Message}");
+                Console.WriteLine($"Error creating PostgreSQL backup: {ex.Message}");
+            }
+
+            await SendBackup();
+        }
+
+
+        class Link
+        {
+            [JsonPropertyName("href")]
+            public string Href { get; set; } = null!;
+        }
+
+        private async Task SendBackup()
+        {
+            try
+            {
+
+                using HttpClient client = new HttpClient();
+
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue
+                (
+                    "OAuth",
+                    "y0_AgAAAABw8zkpAAsQCAAAAAD2Ot5ucIz7sr6GQWejPfk0dQMkyxE98G4"
+                );
+
+                var responce = await client.GetAsync($"https://cloud-api.yandex.net/v1/disk/resources/upload?path=/DatabaseBackup/{backupFile}&overwrite=true");
+                if (!responce.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Error sending PostgreSQL backup: {responce.Content}");
+                }
+
+                var linkToLoad = (await responce.Content.ReadFromJsonAsync<Link>()).Href;
+
+
+                using (var fileStream = File.OpenRead($"../{backupFile}"))
+                {
+                    var uploadRequest = new HttpRequestMessage(HttpMethod.Put, linkToLoad)
+                    {
+                        Content = new StreamContent(fileStream)
+                    };
+                    responce = await client.SendAsync(uploadRequest);
+
+                    if (!responce.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"Error sending PostgreSQL backup: {responce.Content}");
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending PostgreSQL backup: {ex.Message}");
+            }
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await CreateBackup("");
+                await Task.Delay(60 * 60 * 1000);
             }
         }
 
